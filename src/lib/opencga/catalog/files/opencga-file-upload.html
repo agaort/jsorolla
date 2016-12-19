@@ -1,0 +1,355 @@
+<link rel="import" href="opencga-file-tree.html">
+<!--<link rel="import" href="opencga-files-tree2.html">-->
+<link href="../../../../../../../bower_components/bootstrap-treeview/src/css/bootstrap-treeview.css" rel="stylesheet">
+<dom-module id="opencga-file-upload">
+    <style is="custom-style" include="jso-styles"></style>
+    <script src="../../../../../../../bower_components/bootstrap-treeview/src/js/bootstrap-treeview.js"></script>
+    <!--<script type="text/javascript">-->
+
+<!--//                $(function() {-->
+<!--//-->
+<!--//                    var json = '[' +-->
+<!--//                            '{' +-->
+<!--//                            '"text": "Parent 1",' +-->
+<!--//                            '"nodes": [' +-->
+<!--//                            '{' +-->
+<!--//                            '"text": "Child 1",' +-->
+<!--//                            '"nodes": [' +-->
+<!--//                            '{' +-->
+<!--//                            '"text": "Grandchild 1"' +-->
+<!--//                            '},' +-->
+<!--//                            '{' +-->
+<!--//                            '"text": "Grandchild 2"' +-->
+<!--//                            '}' +-->
+<!--//                            ']' +-->
+<!--//                            '},' +-->
+<!--//                            '{' +-->
+<!--//                            '"text": "Child 2"' +-->
+<!--//                            '}' +-->
+<!--//                            ']' +-->
+<!--//                            '},' +-->
+<!--//                            '{' +-->
+<!--//                            '"text": "Parent 2"' +-->
+<!--//                            '},' +-->
+<!--//                            '{' +-->
+<!--//                            '"text": "Parent 3"' +-->
+<!--//                            '},' +-->
+<!--//                            '{' +-->
+<!--//                            '"text": "Parent 4"' +-->
+<!--//                            '},' +-->
+<!--//                            '{' +-->
+<!--//                            '"text": "Parent 5"' +-->
+<!--//                            '}' +-->
+<!--//                            ']';-->
+<!--//-->
+<!--//                }-->
+<!--//        function buildDomTree() {-->
+<!--//-->
+<!--//            var data = [];-->
+<!--//            function walk(nodes, data) {-->
+<!--//                if (!nodes) { return; }-->
+<!--//                $.each(nodes, function (id, node) {-->
+<!--//                    var obj = {-->
+<!--//                        id: id,-->
+<!--//                        text: node.nodeName + " - " + (node.innerText ? node.innerText : ''),-->
+<!--//                        tags: [node.childElementCount > 0 ? node.childElementCount + ' child elements' : '']-->
+<!--//                    };-->
+<!--//                    if (node.childElementCount > 0) {-->
+<!--//                        obj.nodes = [];-->
+<!--//                        walk(node.children, obj.nodes);-->
+<!--//                    }-->
+<!--//                    data.push(obj);-->
+<!--//                });-->
+<!--//            }-->
+<!--//            walk($('html')[0].children, data);-->
+<!--//            return data;-->
+<!--//        }-->
+
+    <!--</script>-->
+    <template>
+        <div>
+            <div class="row">
+                <div class="well col-sm-2">
+                    <label>File Browser</label>
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <label for="treeview"></label>
+                            <div id="treeview"/>
+                        </div>
+                    </div>
+                </div>
+
+                </div>
+                <div class="col-sm-9">
+                    <div class="well row">
+                        <opencga-file-tree></opencga-file-tree>
+                        <!--<opencga-files-tree2 opencga-client="{{opencgaClient}}" studyId="{{study.id}}" ></opencga-files-tree2>-->
+                    </div>
+                    <hr>
+                    <div class="well row">
+                        <div>
+                            <form style="height: 300px">
+                                <div class="form-group row">
+                                    <label for="inputFile" class="col-sm-2 col-form-label">File</label>
+                                    <div class="col-sm-10">
+                                        <input type="file" class="file" id="FileToUpload" style="display:none">
+                                        <div class="input-group">
+                                            <input type="text" class="form-control" id="inputFile">
+                                            <span class="input-group-btn">
+                                                <button class="browse btn btn-primary" type="button">...</button>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <fieldset class="form-group row">
+                                    <label class="col-form-legend col-sm-2">Type</label>
+                                    <div class="col-sm-10">
+                                        <div class="form-check">
+                                            <label class="form-check-label">
+                                                <input class="form-check-input" type="radio" name="bioformat" id="vcf" value="VCF"> VCF
+                                            </label>
+                                        </div>
+                                        <div class="form-check">
+                                            <label class="form-check-label">
+                                                <input class="form-check-input" type="radio" name="bioformat" id="bam" value="BAM"> BAM
+                                            </label>
+                                        </div>
+                                        <div class="form-check">
+                                            <label class="form-check-label">
+                                                <input class="form-check-input" type="radio" name="bioformat" id="others"
+                                                       value="Others"> Others
+                                            </label>
+                                        </div>
+                                    </div>
+                                </fieldset>
+
+                                <div class="form-group row">
+                                    <label class="col-sm-2 col-form-label">Path</label>
+                                    <div class="col-sm-10">
+                                        <template is="dom-if" if="{{checkStudy(study)}}">
+                                            <input id="pathFile" type="text" class="form-control" value="{{project.alias}}/{{study.alias}}" disabled>
+                                        </template>
+
+                                    </div>
+                                </div>
+
+                                <div class="form-group row" style="float: right;">
+                                    <div class="offset-sm-2 col-sm-10">
+                                        <button type="submit" class="btn btn-primary" on-click="uploadFile">Upload</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </template>
+
+</dom-module>
+<script>
+    Polymer({
+        is: "opencga-file-upload",
+            properties: {
+                opencgaClient: {
+                    type: Object
+                },
+                study: {
+                    type: Object
+                },
+                project: {
+                    type: Object
+                },
+                studies: {
+                    type: Array
+                }
+
+            },
+
+        ready: function() {
+            let _this = this;
+            $(document).on('click', '.browse', function(){
+                var file = $(this).parent().parent().parent().find('.file');
+                file.trigger('click');
+            });
+
+            $(document).on('change', '.file', function(){
+                $(this).parent().find('.form-control').val($(this).val().replace(/C:\\fakepath\\/i, ''));
+
+                let allowedFiles = [".vcf", ".bam"];
+                let fileUpload = $("#inputFile");
+                let regex = new RegExp("([a-zA-Z0-9\s_\\.\-:])+(" + allowedFiles.join('|') + ")$");
+                if (!regex.test(fileUpload.val().toLowerCase())) {
+                    $("#others").prop("checked", true);
+                } else {
+                    let filePatterns = fileUpload.val().toLowerCase().match(regex);
+                    if (filePatterns.length > 1) {
+                        switch(filePatterns[filePatterns.length-1]) {
+                            case ".vcf":
+                                $("#vcf").prop("checked", true);
+                                _this.fileType = "vcf";
+                                break;
+                            case ".bam":
+                                $("#bam").prop("checked", true);
+                                _this.fileType = "bam";
+                                break;
+                        }
+                    }
+                }
+                $("#pathFile").val(_this.project.alias +"/"+_this.study.alias+"/"+fileUpload.val());
+            });
+
+            var defaultData = [
+                {
+                    text: 'Parent 1',
+                    href: '#parent1',
+                    tags: ['4'],
+                    nodes: [
+                        {
+                            text: 'Child 1',
+                            href: '#child1',
+                            tags: ['2'],
+                            nodes: [
+                                {
+                                    text: 'Grandchild 1',
+                                    href: '#grandchild1',
+                                    tags: ['0']
+                                },
+                                {
+                                    text: 'Grandchild 2',
+                                    href: '#grandchild2',
+                                    tags: ['0']
+                                }
+                            ]
+                        },
+                        {
+                            text: 'Child 2',
+                            href: '#child2',
+                            tags: ['0']
+                        }
+                    ]
+                },
+                {
+                    text: 'Parent 2',
+                    href: '#parent2',
+                    tags: ['0']
+                },
+                {
+                    text: 'Parent 3',
+                    href: '#parent3',
+                    tags: ['0']
+                },
+                {
+                    text: 'Parent 4',
+                    href: '#parent4',
+                    tags: ['0']
+                },
+                {
+                    text: 'Parent 5',
+                    href: '#parent5',
+                    tags: ['0']
+                }
+            ];
+
+            var options = {
+                bootstrap2: false,
+                showTags: true,
+                levels: 5,
+                color: "#428bca",
+                expandIcon: 'glyphicon glyphicon-chevron-right',
+                collapseIcon: 'glyphicon glyphicon-chevron-down',
+                nodeIcon: 'glyphicon glyphicon-bookmark',
+                data:  [
+                    {
+                        text: 'Parent 1',
+                        href: '#parent1',
+                        tags: ['4'],
+                        nodes: [
+                            {
+                                text: 'Child 1',
+                                href: '#child1',
+                                tags: ['2'],
+                                nodes: [
+                                    {
+                                        text: 'Grandchild 1',
+                                        href: '#grandchild1',
+                                        tags: ['0']
+                                    },
+                                    {
+                                        text: 'Grandchild 2',
+                                        href: '#grandchild2',
+                                        tags: ['0']
+                                    }
+                                ]
+                            },
+                            {
+                                text: 'Child 2',
+                                href: '#child2',
+                                tags: ['0']
+                            }
+                        ]
+                    },
+                    {
+                        text: 'Parent 2',
+                        href: '#parent2',
+                        tags: ['0']
+                    },
+                    {
+                        text: 'Parent 3',
+                        href: '#parent3',
+                        tags: ['0']
+                    },
+                    {
+                        text: 'Parent 4',
+                        href: '#parent4',
+                        tags: ['0']
+                    },
+                    {
+                        text: 'Parent 5',
+                        href: '#parent5',
+                        tags: ['0']
+                    }
+                ]
+            };
+            this.async(function() {
+                $('#treeview').treeview(options);
+            }, 10);
+
+        },
+        checkStudy: function(study) {
+            return study != null;
+        },
+        checkStudies: function(studies) {
+            return typeof this.study === "undefined" && studies.length > 0;
+        },
+        uploadFile: function (e) {
+            e.preventDefault();
+
+            if (typeof this.study === "undefined" && typeof this.studies !== "undefined" && this.studies != null && this.studies.length > 0) {
+                let selectedStudy = $("#studyOptions")[0].value;
+                for (let i in this.studies) {
+                    if (selectedStudy == this.studies[i].alias) {
+                        this.study = this.studies[i];
+                        break;
+                    }
+                }
+            }
+            if (this.opencgaClient instanceof OpenCGAClient) {
+                let params = {
+                    sid: this.opencgaClient._config.sessionId,
+                    studyId: this.study.id,
+                    file: $("#FileToUpload").prop('files')[0],
+                    fileFormat: this.fileType,
+//                        bioFormat: this.fileType,
+                    relativeFilePath: this.$.pathInput.value
+                };
+                this.opencgaClient.files().upload(params).then(function (response) {
+                    console.log(response)
+                });
+            }
+        }
+
+    });
+</script>

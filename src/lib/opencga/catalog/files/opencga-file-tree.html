@@ -1,0 +1,46 @@
+<dom-module id="opencga-file-tree">
+    <style is="custom-style" include="iron-flex iron-flex-reverse iron-flex-alignment iron-flex-factors iron-positioning">
+
+    </style>
+    <template>
+        <div class="row">
+            <label class="col-sm-6">Name</label>
+            <label class="col-sm-2">Date</label>
+            <label class="col-sm-2">Size</label>
+            <label class="col-sm-2">Status</label>
+        </div>
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="panel" style="height: 200px;cursor:pointer">
+                    <!--<template is="dom-repeat" items="{{studies}}">-->
+                        <span class="col-sm-6">File.vcf</span>
+                        <span class="col-sm-2">Dec,14</span>
+                        <span class="col-sm-2">100MB</span>
+                        <span class="col-sm-2">READY</span>
+                    <!--</template>-->
+                </div>
+            </div>
+
+        </div>
+     </template>
+
+</dom-module>
+<script>
+    Polymer({
+        is: "opencga-file-tree",
+        properties: {
+            opencgaClient: {
+                type: Object
+            },
+            study: {
+                type: Object,
+                notify:true
+            },
+            project: {
+                type: Object,
+                notify:true
+            }
+
+        }
+    });
+</script>
