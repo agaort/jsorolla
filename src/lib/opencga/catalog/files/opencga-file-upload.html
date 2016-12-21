@@ -1,9 +1,27 @@
 <link rel="import" href="opencga-file-tree.html">
+<link rel="import" href="../../../components/opencga/files/jso-opencga-project-tree.html">
+<link rel="import" href="../../../components/opencga/files/jso-opencga-file-preview.html">
+<!--<link rel="import" href="../../../components/opencga/files/jso-opencga-folder-list.html">-->
+<link rel="import" href="susi-opencga-folder-list.html">
 <!--<link rel="import" href="opencga-files-tree2.html">-->
-<link href="../../../../../../../bower_components/bootstrap-treeview/src/css/bootstrap-treeview.css" rel="stylesheet">
+<!--<link href="../../../../../../../bower_components/bootstrap-treeview/src/css/bootstrap-treeview.css" rel="stylesheet">-->
 <dom-module id="opencga-file-upload">
-    <style is="custom-style" include="jso-styles"></style>
-    <script src="../../../../../../../bower_components/bootstrap-treeview/src/js/bootstrap-treeview.js"></script>
+    <style is="custom-style" include="jso-styles">
+        #mainmenucontent {
+            height: calc(100% - 30px);
+            overflow-y: auto;
+        }
+
+        #maincontent {
+            position: absolute;
+            left: 175px;
+            top: 0;
+            /*width: calc(100% - 175px);*/
+            height: 100%;
+            white-space: nowrap;
+        }
+    </style>
+    <!--<script src="../../../../../../../bower_components/bootstrap-treeview/src/js/bootstrap-treeview.js"></script>-->
     <!--<script type="text/javascript">-->
 
 <!--//                $(function() {-->
@@ -73,18 +91,42 @@
                     <label>File Browser</label>
                     <div class="row">
                         <div class="col-sm-12">
-                            <label for="treeview"></label>
-                            <div id="treeview"/>
+                            <!--<label for="treeview"></label>-->
+                            <!--<div id="treeview"/>-->
+                            <div id="mainmenucontent">
+                                <template is="dom-repeat" items="{{projects}}">
+                                    <jso-opencga-project-tree on-clickstudy="handleStudyClick" project="{{item}}">
+                                    </jso-opencga-project-tree>
+                                </template>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                </div>
                 <div class="col-sm-9">
-                    <div class="well row">
-                        <opencga-file-tree></opencga-file-tree>
+                    <div class="well row maincontent">
+                        <!--<opencga-file-tree></opencga-file-tree>-->
+                            <susi-opencga-folder-list id="opencgaFolderList" on-fileselect="handleFileSelect" on-openfolder="handleOpenFolder" on-upload-file="handleUploadFile" on-back="handleBackFolder" on-need-refresh="refreshFolderFiles" on-previewfile="handlePreviewFile" study="{{study}}" folder="{{folder}}" files="{{files}}" mode="{{mode}}" disable-icon-view="{{disableIconView}}">
+                            </susi-opencga-folder-list>
+
                         <!--<opencga-files-tree2 opencga-client="{{opencgaClient}}" studyId="{{study.id}}" ></opencga-files-tree2>-->
                     </div>
+                    <div id="botbar" class="horizontal layout center">
+                        <div class="flex"></div>
+                        <div hidden$="{{!checkFileModeOk(mode,selectedFile)}}" class="jso-btn jso-btn-shdw" style="width:100px;" on-click="handleFileModeOk">
+                            OK
+                        </div>
+                        <content id="customButtons" select=".custom-button"></content>
+                    </div>
+                    <jso-panel modal closable hidden id="filePreviewPanel">
+                        <div class="header">
+                            <i class="fa fa-eye"></i> File Preview
+                        </div>
+                        <jso-opencga-file-preview class="container" id="filePreview"></jso-opencga-file-preview>
+                        <!--<div class="container">-->
+                        <!--<code class="wrapped-text">{{contentData}}</code>-->
+                        <!--</div>-->
+                    </jso-panel>
                     <hr>
                     <div class="well row">
                         <div>
@@ -162,9 +204,78 @@
                 project: {
                     type: Object
                 },
+                projects: {
+                    type: Array,
+                    notify: true,
+                    observer: 'projectsChanged'
+                },
+                selectedProject: {
+                    type: Object,
+                    notify: true,
+                    observer: 'selectedProjectChanged'
+                },
+                selectedFile: {
+                    type: Object,
+                    notify: true,
+                    value: function() {
+                        return null;
+                    }
+                },
                 studies: {
                     type: Array
-                }
+                },
+                files: {
+                    type: Array,
+                    notify: true
+                },
+                folder: {
+                    type: Object,
+                    notify: true
+                },
+                folders: {
+                    type: Array,
+                    notify: true,
+                    value: function() {
+                        return []
+                    }
+                },
+                selectedStudy: {
+                    type: Object,
+                    notify: true,
+                    observer: 'selectedStudyChanged'
+                },
+                bioformats: {
+                    type: Array,
+                    value: function() {
+                        return [];
+                    },
+                    notify: true
+                },
+                disableNewProject: {
+                    type: Boolean,
+                    value: false,
+                    reflectToAttribute: true
+                },
+                disableNewStudy: {
+                    type: Boolean,
+                    value: false,
+                    reflectToAttribute: true
+                },
+                disableIconView: {
+                    type: Boolean,
+                    value: false,
+                    reflectToAttribute: true
+                },
+                contentData: {
+                    type: String,
+                    value: ""
+                },
+                mode: {
+                    type: String,
+                    reflectToAttribute: true,
+                    value: ""
+                },
+
 
             },
 
@@ -174,7 +285,7 @@
                 var file = $(this).parent().parent().parent().find('.file');
                 file.trigger('click');
             });
-
+            this.selectedStudy = this.study;
             $(document).on('change', '.file', function(){
                 $(this).parent().find('.form-control').val($(this).val().replace(/C:\\fakepath\\/i, ''));
 
@@ -200,6 +311,14 @@
                 }
                 $("#pathFile").val(_this.project.alias +"/"+_this.study.alias+"/"+fileUpload.val());
             });
+            var me = this;
+            if (this._parentJsoPanel != null) {
+                this._parentJsoPanel.addEventListener('hidden', function(e) {
+                    if (e.detail == false) {
+                        me._setInitialSelection();
+                    }
+                });
+            }
 
             var defaultData = [
                 {
@@ -314,9 +433,129 @@
                 ]
             };
             this.async(function() {
-                $('#treeview').treeview(options);
+               // $('#treeview').treeview(options);
             }, 10);
 
+        },
+        checkFileModeOk: function(mode, selectedFile) {
+            if (this.enableSelectOk == true) {
+                if (mode === 'file' && selectedFile != null && selectedFile.id != null && selectedFile.type == 'FILE') {
+                    return true;
+                }
+                if (selectedFile != null){
+                    if(selectedFile.id != null){
+                        if(selectedFile.type == 'DIRECTORY'){
+                            return true;
+                        }
+                    }
+                }
+                if (mode === 'folder' && selectedFile != null && selectedFile.id != null && selectedFile.type == 'DIRECTORY') {
+                    return true;
+                }
+            }
+            return false;
+        },
+        handleFileModeOk: function(e) {
+            this._parentJsoPanel.hidden = true;
+            this.fire('ok-click');
+        },
+        projectsChanged: function(neo, old) {
+            if (this.projects == null || this.projects.length === 0) {
+                this.reset();
+            }
+            this.async(function() {
+                this._setInitialSelection();
+            }, 100);
+        },
+        _setInitialSelection: function() {
+            if (this._parentJsoPanel != null && this._parentJsoPanel.hidden === false) {
+                if (this.selectedProject == null) {
+                    var el = Polymer.dom(this.root).querySelector('jso-opencga-project-tree');
+                    this.set('selectedProject', el);
+                }
+                if (this.selectedProject != null && this.selectedStudy == null) {
+                    var el = Polymer.dom(this.selectedProject.root).querySelector('jso-opencga-study-tree');
+                    this.set('selectedStudy', el);
+                }
+                if (this.folder && this.selectedStudy) {
+                    this.refreshFolderFiles();
+                }
+            }
+        },
+
+
+        selectedStudyChanged: function(neo, old) {
+            if (old) old.selected = false;
+            if (neo) neo.selected = true;
+
+            this.selectedFile = null;
+            this.files = [];
+            if (neo != null) {
+                this._showStudyFolder();
+            }
+        },
+        selectedProjectChanged: function(neo, old) {
+            if (old) old.selected = false;
+            if (neo) neo.selected = true;
+        },
+        handleStudyClick: function(e) {
+            if (this.selectedStudy !== e.currentTarget.selectedStudy) {
+                this.files = [];
+            }
+            this.set('selectedProject', e.currentTarget);
+            this.set('selectedStudy', e.currentTarget.selectedStudy);
+        },
+        handleFileSelect: function(e) {
+            this.selectedFile = e.detail;
+            console.log(this.selectedFile);
+            this._checkCustomButtons();
+        },
+        handleOpenFolder: function(e) {
+            var me = this;
+            this.folder = e.detail;
+            this.push('folders', this.folder);
+            this.files = [];
+            this.refreshFolderFiles();
+        },
+        refreshFolderFiles: function() {
+            var me = this;
+            this.loading = true;
+            var f = this.files[0];
+            this._getFilesInFolder(this.selectedStudy.study.id, this.folder.id, function(files) {
+                me.files = files;
+                me.loading = false;
+                if (me.enableAutoIndex) {
+                    if (f.name !== me.files[0].name && me.files[0].index == null && me.files[0].type == "FILE") {
+                        me.$.opencgaFolderList._autoIndexfile(me.files[0]);
+                    }
+                }
+                //                console.log(files);
+            });
+        },
+        handleStudyBreadcrum: function(e) {
+            this.files = [];
+            this._showStudyFolder();
+        },
+        handleBreadcrumClick: function(e) {
+            var me = this;
+            this.folder = e.currentTarget.folder;
+
+            while (this.folder !== this.folders[this.folders.length - 1]) {
+                this.pop('folders');
+            }
+            this.files = [];
+            this.refreshFolderFiles();
+        },
+        handleBackFolder: function(e) {
+            var me = this;
+            this.pop('folders');
+            this.files = [];
+            if (this.folders.length > 0) {
+                this.set('folder', this.folders[this.folders.length - 1]);
+                this.refreshFolderFiles();
+            } else {
+                this._showStudyFolder();
+            }
         },
         checkStudy: function(study) {
             return study != null;
@@ -349,6 +588,185 @@
                     console.log(response)
                 });
             }
+        },
+        reset: function() {
+            this.set('selectedProject', undefined);
+            this.set('selectedStudy', undefined);
+            this.set('selectedFile', undefined);
+            this.set('folder', undefined);
+            this.set('folders', []);
+            this.set('files', []);
+            this.set('contentData', '');
+            this.set('loading', false);
+        },
+        _showStudyFolder: function() {
+            var me = this;
+            this.loading = true;
+            this._getStudyFolder(this.selectedStudy.study.id, function(folder) {
+                me.set('folders', []);
+                me.folder = folder;
+                me._getFilesInFolder(me.selectedStudy.study.id, me.folder.id, function(files) {
+                    me.files = files;
+                    me.loading = false;
+                    //                    console.log(files);
+                });
+            });
+        },
+        _getStudyFolder: function(studyId, callback) {
+            var me = this;
+            this.message = '';
+            var folder;
+//            this.opencgaClient.files().upload(params).then(function (response) {
+            if (this.opencgaClient instanceof OpenCGAClient) {
+                this.opencgaClient.files().search({
+                    sid: this.opencgaClient._config.sessionId,
+                    studyId: studyId,
+                    name: '.'
+                }).then( function(response) {
+                        // console.log(response);
+                        if (response.response[0].errorMsg === '' || response.response[0].errorMsg == null) {
+                            folder = response.response[0].result[0];
+                            callback(folder);
+                        } else {
+                            console.log(response.response[0].errorMsg);
+                        }
+                })
+            }
+        },
+        _getFilesInFolder: function(studyId, folderId, callback) {
+            var me = this;
+            var files;
+
+            var bfList = [];
+            if (this.bioformats > 0) {
+                var bfList = ['NONE'];
+                for (var i = 0; i < this.bioformats.length; i++) {
+                    var bf = this.bioformats[i];
+                    bfList.push(bf.value);
+                }
+            }
+
+            var query = {
+                sid: this.opencgaClient._config.sessionId,
+                //                    status:'READY,STAGED,MISSING',
+                status: 'READY',
+                type: 'FILE,DIRECTORY',
+                studyId: studyId
+            };
+
+            if (bfList > 0 && (this.mode === 'file' || this.mode === 'folder')) {
+                query.bioformat = bfList.join(',');
+            }
+
+
+            if (this.opencgaClient instanceof OpenCGAClient) {
+                this.opencgaClient.files().list(folderId,query).then(function(response){
+                    console.log(response);
+                    if (response.response[0].errorMsg === '' || response.response[0].errorMsg == null) {
+                        files = me._filterFiles(response.response[0].result);
+                        //                            files = response.response[0].result;
+                        callback(files);
+                    } else {
+                        console.log(response.response[0].errorMsg);
+                    }
+                })
+            }
+//            OpencgaManager.files.list({
+//                id: folderId,
+//                query: query,
+//                request: {
+//                    async: true,
+//                    success: function(response) {
+//                        // console.log(response);
+//                        if (response.response[0].errorMsg === '' || response.response[0].errorMsg == null) {
+//                            files = me._filterFiles(response.response[0].result);
+//                            //                            files = response.response[0].result;
+//                            callback(files);
+//                        } else {
+//                            console.log(response.response[0].errorMsg);
+//                        }
+//                    },
+//                    error: function() {
+//                        console.log('Server error, try again later.');
+//                    }
+//                }
+//            });
+        },
+        _filterFiles: function(files) {
+            var bfList = [];
+            for (var i = 0; i < this.bioformats.length; i++) {
+                var bf = this.bioformats[i];
+                bfList.push(bf.value);
+            }
+
+            files.sort(function(a, b) {
+                return b.creationDate.localeCompare(a.creationDate);
+            });
+            var filesFiltered = [];
+            for (var i = 0; i < files.length; i++) {
+                var file = files[i];
+                // console.log(file.name + ' ' + file.id);
+                // console.log(file);
+                if (
+                        // file.bioformat == 'ALIGNMENT' &&
+                        (
+                                file.name.charAt(0) == '.' ||
+                                file.name == 'command_line.sh' ||
+                                file.name.indexOf('sge_err.job') != -1 ||
+                                file.name.indexOf('sge_out.job') != -1 ||
+                                Utils.endsWith(file.name, '.annot.json.gz') ||
+                                Utils.endsWith(file.name, '.file.json.gz') ||
+                                Utils.endsWith(file.name, '.variants.stats.json.gz') ||
+                                Utils.endsWith(file.name, '.source.stats.json.gz') ||
+                                Utils.endsWith(file.name, '.bam.bai') ||
+                                Utils.endsWith(file.name, '.bam.coverage.json.gz') ||
+                                Utils.endsWith(file.name, '.bam.mean-coverage.json.gz') ||
+                                (file.bioformat == 'VARIANT' && file.format == 'AVRO') ||
+                                Utils.endsWith(file.name, '.snappy')
+                        )
+                ) {
+                    continue;
+                }
+
+                if (this.mode == 'folder') {
+                    if (file.type != 'DIRECTORY') {
+                        continue;
+                    }
+                } else if (this.mode == 'file' && bfList.length > 0) {
+                    if (file.type == 'FILE' && bfList.indexOf(file.bioformat) == -1) {
+                        continue;
+                    }
+                }
+
+                filesFiltered.push(file);
+            }
+            return filesFiltered;
+        },
+
+        handlePreviewFile: function(e) {
+            this.$.filePreviewPanel.show();
+            this.$.filePreview.file = this.selectedFile;
+        },
+        _checkCustomButtons: function() {
+            var els = this.$.botbar.querySelectorAll('.custom-button');
+            for (var i = 0; i < els.length; i++) {
+                var el = els[i];
+                var found = false;
+                var exts = el.getAttribute('file-ext').split(',');
+                for (var j = 0; j < exts.length; j++) {
+                    var ext = exts[j];
+                    if (Utils.endsWithIgnoreCase(this.selectedFile.name, ext)) {
+                        found = true;
+                        break;
+                    }
+                }
+                if (found) {
+                    el.removeAttribute('hidden');
+                } else {
+                    el.setAttribute('hidden', '');
+                }
+            }
+
         }
 
     });

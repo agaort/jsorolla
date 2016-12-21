@@ -1,0 +1,121 @@
+<dom-module id="susi-opencga-folder-list-item">
+    <style is="custom-style" include="jso-styles">
+        :host {
+            position: relative;
+            display: block;
+            box-sizing: border-box;
+        }
+
+        :host:hover {
+            background-color: #ddd;
+        }
+
+        :host[selected] {
+            background-color: #ccc;
+        }
+
+
+        .icon {
+            padding: 0 5px 0 2px;
+        }
+
+
+        .fa-cog {
+            color: var(--default-primary-color);
+        }
+
+        .huge-icon {
+            font-size: 30px;
+            font-weight: lighter !important;
+            margin: 2px;
+            padding: 10px;
+            height: 25px;
+        }
+
+        .icon-mode-elem {
+            padding: 0 5px 0 2px;
+            width: 60px;
+            text-align: center;
+        }
+
+        .icon-mode-elem > .name {
+            width: 60px;
+        }
+    </style>
+    <template>
+        <div class="horizontal layout">
+            <template is="dom-if" if="{{computeViewMode(viewMode, 'list')}}">
+                <div class="row">
+                    <div class="col-sm-6">
+                        <span class="icon"><i class$="{{computeIcon(file)}}"></i></span>
+                        <span class="name flex" title$="{{file.name}}">{{file.name}}</span>
+                    </div>
+                    <div class="col-sm-2 creationDate">{{computeDate(file)}}</div>
+                    <div class="col-sm-2">{{file.diskUsage}}</div>
+                    <div id="col-sm-2 status">
+                        <i class$="{{computeStatusIcon(file)}}"></i>
+                        <span>{{computeStatus(file)}}</span>
+                    </div>
+                </div>
+            </template>
+            <template is="dom-if" if="{{computeViewMode(viewMode, 'icon')}}">
+                <div class="vertical layout flex icon-mode-elem" title$="{{file.name}}">
+                    <div class="icon huge-icon"><i class$="{{computeIcon(file)}}"></i></div>
+                    <div class="flex">{{file.name}}</div>
+                </div>
+            </template>
+        </div>
+    </template>
+</dom-module>
+<script>
+    Polymer({
+        is: "susi-opencga-folder-list-item",
+        properties: {
+            file: {
+                type: Object,
+                notify: true
+            },
+            indexableBioFormats: {
+                type: Array,
+                value: ['VARIANT', 'ALIGNMENT']
+            },
+            viewMode: {
+                type: String,
+                value: 'list',
+                reflectToAttribute: true
+            }
+        },
+        computeDate: function(file) {
+            var date = new Date(Date.parse(Utils.parseDate(file.creationDate)));
+            return Utils.months[date.getMonth()]+ " " + date.getDate() + ", " + date.getFullYear();
+        },
+        computeIcon: function(file) {
+            var iconMap = {
+                "DIRECTORY": 'fa fa-folder',
+                "FILE": 'fa fa-file-o'
+            };
+
+            return iconMap[file.type];
+        },
+        computeStatusIcon: function(file) {
+            var iconMap = {
+                "INDEXING": 'fa fa-cog fa-spin',
+                "READY": 'fa fa-check',
+                "NONE": 'fa fa-check'
+            };
+            if (file.index) {
+                return iconMap[file.index.status.name];
+            }
+            return '';
+        },
+        computeStatus: function(file) {
+            if (file.index && this.indexableBioFormats.indexOf(file.bioformat) != -1) {
+                return file.index.status.name;
+            }
+            return '--';
+        },
+        computeViewMode: function(viewMode, value) {
+            return viewMode == value;
+        }
+    });
+</script>
