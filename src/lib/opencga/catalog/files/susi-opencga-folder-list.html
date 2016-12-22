@@ -72,7 +72,9 @@
             border-top: 1px solid var(--divider-color);
             padding: 5px;
         }
-
+        button[hidden]{
+            display:none;
+        }
         .data {
             color: var(--secondary-text-color);
         }
@@ -296,6 +298,10 @@
                 }
             }
             return false;
+//            if(folders != null){
+//                return false;
+//            }
+//            return true;
         },
         checkSelected: function(selected) {
             return selected == null;
