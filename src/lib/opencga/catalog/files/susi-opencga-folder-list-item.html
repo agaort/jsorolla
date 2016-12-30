@@ -45,7 +45,7 @@
     <template>
         <div class="horizontal layout">
             <template is="dom-if" if="{{computeViewMode(viewMode, 'list')}}">
-                <div class="row">
+                <div class="row" style="height: 25px">
                     <div class="col-sm-6">
                         <span class="icon"><i class$="{{computeIcon(file)}}"></i></span>
                         <span class="name flex" title$="{{file.name}}">{{file.name}}</span>

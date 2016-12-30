@@ -1,0 +1,110 @@
+<link rel="import" href="susi-opencga-study-tree.html">
+<dom-module id="susi-opencga-project-tree">
+    <style is="custom-style" include="jso-styles">
+        :host {
+            position: relative;
+            display: block;
+            box-sizing: border-box;
+        }
+
+        :host[selected] > .main > .name {
+            /*font-weight: bold;*/
+        }
+
+        .main {
+            border: 1px solid lightgrey;
+            padding: 10px 2px 10px 0;
+        }
+
+        .name:before {
+            font-family: "FontAwesome";
+            display: inline-block;
+            width: 20px;
+            text-align: center;
+            content: '\f0b1';
+        }
+
+        .arrow:before {
+            font-family: "FontAwesome";
+            display: inline-block;
+            width: 12px;
+            text-align: center;
+            content: '\f0da';
+        }
+
+        .arrow[open]:before {
+            content: '\f0d7';
+        }
+
+        .arrow[empty]:before {
+            content: '\00a0';
+        }
+
+        .arrow {
+            padding: 2px 0 2px 2px;
+        }
+
+        .name {
+            padding: 2px 2px 2px 0;
+            color: #428bca;
+        }
+
+    </style>
+    <template>
+        <div class="main horizontal layout">
+            <span class="arrow" empty$="{{isEmpty(project)}}" open$="{{open}}" on-click="handleArrowClick"></span>
+            <span class="name flex" on-click="handleClick" on-dblclick="handleDblclick">{{project.name}}</span>
+        </div>
+        <div hidden$="{{!open}}">
+            <template is="dom-repeat" items="{{project.studies}}">
+                <susi-opencga-study-tree
+                        on-click="handleStudyClick"
+                        study="{{item}}">
+                </susi-opencga-study-tree>
+            </template>
+        </div>
+    </template>
+</dom-module>
+<script>
+    Polymer({
+        is: "susi-opencga-project-tree",
+        properties: {
+            project: {
+                type: Object
+            },
+            selected: {
+                type: Boolean,
+                reflectToAttribute: true
+            },
+            selectedStudy: {
+                type: Object
+            },
+            open: {
+                type: Boolean,
+                value: true
+            }
+        },
+        isEmpty: function (project) {
+            return project.studies.length <= 0;
+        },
+        handleClick: function (e) {
+            this.fire('clickproject');
+//            this.selectedStudy = null;
+        },
+        handleDblclick: function (e) {
+            this.toggleOpen();
+        },
+        handleArrowClick: function (e) {
+            this.toggleOpen();
+        },
+        handleStudyClick: function (e) {
+            this.selectedStudy = e.currentTarget;
+            this.fire('clickstudy');
+        },
+        toggleOpen: function () {
+            if (this.project.studies.length != 0) {
+                this.open = !this.open;
+            }
+        }
+    });
+</script>

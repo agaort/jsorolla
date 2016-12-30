@@ -1,0 +1,94 @@
+<dom-module id="susi-opencga-study-tree">
+    <style is="custom-style" include="jso-styles">
+        :host {
+            position: relative;
+            display: block;
+            box-sizing: border-box;
+        }
+
+        :host:hover {
+            background-color: #ddd;
+        }
+
+        :host[selected] > .main {
+            background-color: #ccc;
+        }
+
+        .main {
+            border: 1px solid lightgrey;
+            padding-left: 12px;
+            padding-top:8px;
+            padding-bottom: 8px;;
+        }
+
+        .name:before {
+            font-family: "FontAwesome";
+            display: inline-block;
+            width: 20px;
+            text-align: center;
+            content: '\f02d';
+        }
+
+        .arrow:before {
+            font-family: "FontAwesome";
+            display: inline-block;
+            width: 15px;
+            text-align: center;
+            content: '\f0da';
+        }
+
+        .arrow[open]:before {
+            content: '\f0d7';
+        }
+
+        .arrow[empty]:before {
+            content: '\00a0';
+        }
+
+        .arrow {
+            padding: 2px 0 2px 2px;
+        }
+
+        .name {
+            padding: 2px 2px 2px 0;
+            color: #428bca;
+        }
+    </style>
+    <template>
+        <div class="main horizontal layout">
+            <span class="arrow" empty$="{{isEmpty(study)}}" open$="{{open}}" on-click="handleArrowClick"></span>
+            <span class="name flex" on-click="handleClick">{{study.name}}</span>
+        </div>
+        <div hidden$="{{!open}}">
+
+        </div>
+    </template>
+</dom-module>
+<script>
+    Polymer({
+        is: "susi-opencga-study-tree",
+        properties: {
+            study: {
+                type: Object
+            },
+            selected: {
+                type: Boolean,
+                reflectToAttribute: true
+            },
+            open: {
+                type: Boolean,
+                value: false
+            }
+        },
+        isEmpty: function (study) {
+            return study.files.length <= 0;
+        },
+        handleClick: function (e) {
+        },
+        handleArrowClick: function (e) {
+            if (this.study.files.length > 0) {
+                this.open = !this.open;
+            }
+        }
+    });
+</script>

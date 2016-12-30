@@ -1,5 +1,5 @@
 <dom-module id="susi-opencga-file-preview">
-    <style is="custom-style" include="iron-flex iron-flex-reverse iron-flex-alignment iron-flex-factors iron-positioning">
+    <style is="custom-style" include="jso-styles">
         :host {
             display: block;
             position: relative;
@@ -77,6 +77,7 @@
                 limit: this._limit,
                 start: this._start};
             var data;
+            var me = this;
             if (this.opencgaClient instanceof OpenCGAClient) {
                 console.log("en el opencga");
                 this.opencgaClient.files().content(this.file.id,query).then(function(response){
@@ -84,6 +85,12 @@
                     console.log(response);
                     console.log("en el content");
                     data = response;
+                    if (data) {
+                        me.contentData =
+                                me.contentData = me.contentData + data;
+                    } else {
+                        me._end = true;
+                    }
                 })
             }
 //            OpencgaManager.files.content({
@@ -104,12 +111,12 @@
 //                }
 //            });
 
-            if (data) {
-                this.contentData =
-                    this.contentData = this.contentData + data;
-            } else {
-                this._end = true;
-            }
+//            if (data) {
+//                this.contentData =
+//                    this.contentData = this.contentData + data;
+//            } else {
+//                this._end = true;
+//            }
         },
         handleScroll: function(e) {
             var el = e.currentTarget;

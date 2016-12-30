@@ -1,4 +1,4 @@
-<link rel="import" href="../../../components/opencga/files/jso-opencga-create-folder.html">
+<link rel="import" href="susi-opencga-create-folder.html">
 <link rel="import" href="susi-opencga-folder-list-item.html">
 <dom-module id="susi-opencga-folder-list">
     <style is="custom-style" include="jso-styles">
@@ -9,11 +9,11 @@
             background-color: var(--light-secondary-color);
             padding: 3px 7px;
             border-bottom: 1px solid var(--divider-color);
+            font-weight: bold;
+            height: 25px;
+            margin-top:15px;
         }
 
-        #header {
-            height: 25px;
-        }
 
         #content.list {
             height: calc(100% - 55px);
@@ -64,6 +64,10 @@
         .bar > div {
             margin-right: 5px;
         }
+        .bar{
+            padding-left: 10px;
+            padding-right: 10px;
+        }
 
         #fileInfo {
             box-sizing: border-box;
@@ -86,28 +90,30 @@
         .lowercase {
             text-transform: lowercase;
         }
+        .izq{
+            float:right;
+            padding-right: 10px;
+        }
     </style>
     <template>
         <div id="bar" class="row">
             <span class="bar horizontal layout flex">
 
                 <button class="btn btn-primary" hidden$="{{checkBack(folder)}}" on-click="handleBack"> <i class="fa fa-arrow-left"></i></button>
-                <button class="btn btn-primary" hidden$="{{isFolderMode(mode)}}" on-click="handleUploadFile"><i class="fa fa-cloud-upload"></i> Upload</button>
-                <button class="btn btn-primary" hidden$="{{checkFolder(folder)}}" on-click="handleCreateFolder">
-                    <i class="fa fa-folder"></i> +
-                </button>
+                <!--<button class="btn btn-primary" hidden$="{{isFolderMode(mode)}}" on-click="handleUploadFile"><i class="fa fa-cloud-upload"></i> Upload</button>-->
+                <!--cd ..-->
                 <button class="btn btn-primary" hidden$="{{checkSelected(selected)}}" on-click="handleDeleteFile">
                     <i class="fa fa-trash"></i>
                 </button>
                 <button class="btn btn-primary" hidden$="{{checkSelectedFile(selected)}}" on-click="handlePreviewFile">
                     <i class="fa fa-eye"></i>
                 </button>
-
-            </span>
-            <span class="horizontal layout">
                 <button class="btn btn-primary" on-click="handleViewInfo" style="margin-right: 5px;" hidden$="{{checkSelected(selected)}}">
                     <i class="fa fa-info"></i>
                 </button>
+
+            </span>
+            <span class="horizontal layout izq">
                 <button class="btn btn-primary" on-click="handleViewMode" hidden$="{{disableIconView}}">
                     <i class$="{{computeViewModeIconClass(viewMode)}}"></i>
                 </button>
@@ -119,7 +125,7 @@
                 </button>
             </span>
         </div>
-        <hr>
+
         <template is="dom-if" if="{{computeHeader(viewMode)}}">
             <div id="header" class="horizontal layout">
                 <span class="col-sm-6 name">Name</span>
@@ -159,8 +165,8 @@
 
         <jso-panel modal closable hidden id="createFolderModal">
             <div class="header"><i class="fa fa-folder"></i> &nbsp; Create folder</div>
-            <jso-opencga-create-folder class="container" id="createfolder" on-folder-created="handleFolderCreated" folder="{{folder}}" study="{{study}}">
-            </jso-opencga-create-folder>
+            <susi-opencga-create-folder class="container" id="createfolder" on-folder-created="handleFolderCreated" folder="{{folder}}" study="{{study}}">
+            </susi-opencga-create-folder>
         </jso-panel>
 
 
@@ -214,13 +220,13 @@
                 value: false
             }
         },
-        handleUploadFile: function(e) {
-            if (this.study != null) {
-                this.fire('upload-file');
-            } else {
-                alert("You must select a study before uploading a file.")
-            }
-        },
+//        handleUploadFile: function(e) {
+//            if (this.study != null) {
+//                this.fire('upload-file');
+//            } else {
+//                alert("You must select a study before uploading a file.")
+//            }
+//        },
         handleCreateFolder: function(e) {
             if (this.$.createFolderModal.hasAttribute('hidden')) {
                 this.$.createFolderModal.removeAttribute('hidden');
