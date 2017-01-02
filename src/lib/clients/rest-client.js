@@ -30,6 +30,8 @@ class RestClient {
                 console.log("Size: " + event.total + " Bytes");
             } else {
                 console.log(this.response)
+                dataResponse = this.response;
+                resolve(dataResponse);
             }
         };
 
