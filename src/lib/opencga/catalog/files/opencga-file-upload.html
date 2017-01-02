@@ -1,6 +1,6 @@
 <link rel="import" href="susi-opencga-project-tree.html">
 <link rel="import" href="susi-opencga-file-preview.html">
-<link rel="import" href="../../../components/jso-panel.html">
+<link rel="import" href="../../../components/new-jso-panel.html">
 <link rel="import" href="susi-opencga-folder-list.html">
 <dom-module id="opencga-file-upload">
     <style is="custom-style" include="jso-styles">
@@ -49,16 +49,15 @@
                         </div>
                         <content id="customButtons" select=".custom-button"></content>
                     </div>
-                    <jso-panel modal closable hidden id="filePreviewPanel">
-                        <div class="header">
+                    <new-jso-panel modal closable hidden id="filePreviewPanel">
+                        <span class="header">
                             <i class="fa fa-eye"></i> File Preview
-                        </div>
+                        </span>
                         <susi-opencga-file-preview opencga-client={{opencgaClient}} class="container" id="filePreview"></susi-opencga-file-preview>
-                        <!--<jso-opencga-file-preview  class="container" id="filePreview"></jso-opencga-file-preview>-->
                         <!--<div class="container">-->
-                        <!--<code class="wrapped-text">{{contentData}}</code>-->
+                            <!--<code class="wrapped-text">{{contentData}}</code>-->
                         <!--</div>-->
-                    </jso-panel>
+                    </new-jso-panel>
 
                     <div style="padding: 10px;height: 530px" class="row">
 
@@ -311,11 +310,11 @@
         _setInitialSelection: function() {
             if (this._parentJsoPanel != null && this._parentJsoPanel.hidden === false) {
                 if (this.selectedProject == null) {
-                    var el = Polymer.dom(this.root).querySelector('jso-opencga-project-tree');
+                    var el = Polymer.dom(this.root).querySelector('susi-opencga-project-tree');
                     this.set('selectedProject', el);
                 }
                 if (this.selectedProject != null && this.selectedStudy == null) {
-                    var el = Polymer.dom(this.selectedProject.root).querySelector('jso-opencga-study-tree');
+                    var el = Polymer.dom(this.selectedProject.root).querySelector('susi-opencga-study-tree');
                     this.set('selectedStudy', el);
                 }
                 if (this.folder && this.selectedStudy) {
@@ -505,7 +504,6 @@
 
             if (this.opencgaClient instanceof OpenCGAClient) {
                 this.opencgaClient.files().list(folderId,query).then(function(response){
-                    console.log(response);
                     if (response.response[0].errorMsg === '' || response.response[0].errorMsg == null) {
                         files = me._filterFiles(response.response[0].result);
                         //                            files = response.response[0].result;

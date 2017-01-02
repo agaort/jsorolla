@@ -79,15 +79,10 @@
             var data;
             var me = this;
             if (this.opencgaClient instanceof OpenCGAClient) {
-                console.log("en el opencga");
                 this.opencgaClient.files().content(this.file.id,query).then(function(response){
-                    console.log("antes de response");
-                    console.log(response);
-                    console.log("en el content");
                     data = response;
                     if (data) {
-                        me.contentData =
-                                me.contentData = me.contentData + data;
+                        me.contentData = me.contentData = me.contentData + data;
                     } else {
                         me._end = true;
                     }
