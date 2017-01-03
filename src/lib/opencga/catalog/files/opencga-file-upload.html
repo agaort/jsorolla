@@ -62,8 +62,8 @@
                     <div style="padding: 10px;height: 530px" class="row">
 
                         <ul id="FilesViewTabs" class="nav nav-tabs" role="tablist">
-                            <li role="presentation" class="active"><a href="#uploadTab" role="tab" data-toggle="tab"><i class="fa fa-cloud-upload"></i>Upload</a></li>
-                            <li role="presentation"><a href="#createFolderTab" role="tab" data-toggle="tab"><i class="fa fa-folder"></i> + New</a></li>
+                            <li role="presentation" class="active"><a href="#uploadTab" role="tab" data-toggle="tab"><i class="fa fa-cloud-upload"></i> Upload</a></li>
+                            <li role="presentation"><a href="#createFolderTab" role="tab" data-toggle="tab"><i class="fa fa-folder"></i>+ New</a></li>
                         </ul>
                         <br>
                         <div class="tab-content">
@@ -117,14 +117,39 @@
 
                                             <div class="form-group row" style="float: right;">
                                                 <div class="offset-sm-2 col-sm-10">
-                                                    <button type="submit" class="btn btn-primary" on-click="uploadFile"><i class="fa fa-cloud-upload"></i>Upload</button>
+                                                    <button type="submit" class="btn btn-primary" on-click="uploadFile"><i class="fa fa-cloud-upload"></i> Upload</button>
                                                 </div>
                                             </div>
                                         </form>
                                     </div>
 
                             </div>
-                            <div id="createFolderTab" role="tabpanel" class="tab-pane"></div>
+                            <div id="createFolderTab" role="tabpanel" class="tab-pane">
+                                <div>
+                                    <form id="formNewFolder" style="height: 300px">
+                                        <div class="form-group row">
+                                            <label for="inputFile" class="col-sm-2 col-form-label">Name</label>
+                                            <div class="col-sm-10">
+                                                <input type="text" id="newFolderName" class="form-control" required pattern="[a-zA-Z0-9_-]+">
+                                            </div>
+                                        </div>
+                                        <div class="form-group row">
+                                            <label class="col-sm-2 col-form-label">Path</label>
+                                            <div class="col-sm-10">
+                                                <template is="dom-if" if="{{checkStudy(study)}}">
+                                                    <input type="text" class="form-control" value="{{project.alias}}/{{study.alias}}" disabled>
+                                                </template>
+                                            </div>
+                                        </div>
+                                        <div class="form-group row" style="float: right;">
+                                            <div class="offset-sm-2 col-sm-10">
+                                                <button type="submit" class="btn btn-primary" on-click="createFolder"><i class="fa fa-folder"></i>+ Create Folder</button>
+                                            </div>
+                                        </div>
+                                        <div id="mensajeFolder"></div>
+                                    </form>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -228,7 +253,7 @@
                 var file = $(this).parent().parent().parent().find('.file');
                 file.trigger('click');
             });
-            this.selectedStudy = this.study;
+
             $(document).on('change', '.file', function(){
                 $(this).parent().find('.form-control').val($(this).val().replace(/C:\\fakepath\\/i, ''));
 
@@ -254,14 +279,7 @@
                 }
                 $("#pathFile").val(_this.project.alias +"/"+_this.study.alias+"/"+fileUpload.val());
             });
-            var me = this;
-            if (this._parentJsoPanel != null) {
-                this._parentJsoPanel.addEventListener('hidden', function(e) {
-                    if (e.detail == false) {
-                        me._setInitialSelection();
-                    }
-                });
-            }
+            this._setInitialSelection();
 
 //
 //            var options = {
@@ -296,7 +314,6 @@
             return false;
         },
         handleFileModeOk: function(e) {
-            this._parentJsoPanel.hidden = true;
             this.fire('ok-click');
         },
         projectsChanged: function(neo, old) {
@@ -308,7 +325,6 @@
             }, 100);
         },
         _setInitialSelection: function() {
-            if (this._parentJsoPanel != null && this._parentJsoPanel.hidden === false) {
                 if (this.selectedProject == null) {
                     var el = Polymer.dom(this.root).querySelector('susi-opencga-project-tree');
                     this.set('selectedProject', el);
@@ -320,9 +336,7 @@
                 if (this.folder && this.selectedStudy) {
                     this.refreshFolderFiles();
                 }
-            }
         },
-
         selectedStudyChanged: function(neo, old) {
             if (old) old.selected = false;
             if (neo) neo.selected = true;
@@ -430,6 +444,42 @@
                 this.opencgaClient.files().upload(params,options).then(function (response) {
                     console.log(response)
                 });
+            }
+        },
+        createFolder: function (e) {
+            e.preventDefault();
+            if (typeof this.study === "undefined" && typeof this.studies !== "undefined" && this.studies != null && this.studies.length > 0) {
+                let selectedStudy = $("#studyOptions")[0].value;
+                for (let i in this.studies) {
+                    if (selectedStudy == this.studies[i].alias) {
+                        this.study = this.studies[i];
+                        break;
+                    }
+                }
+            }
+
+            var me = this;
+            this.$("#newFolderName").val('');
+            if (this.$.formNewFolder.checkValidity()) {
+                if (this.opencgaClient instanceof OpenCGAClient) {
+                    let params = {
+                        sid: this.opencgaClient._config.sessionId,
+                        studyId: this.study.id,
+                        folder: this.project.alias +"/"+this.study.alias+"/"+$("#newFolderName").val(),
+                    }
+                    this.opencgaClient.files().createFolder(params).then(function (response){
+                        console.log(response);
+                        if (response.response[0].error === '' || response.response[0].error == null) {
+                            me.$("#mensajeFolder").val('');
+                            me.$("#newFolderName").val('');
+                            me.refreshFolderFiles();
+                        } else {
+                            me.$("#mensajeFolder").val(response.response[0].error);
+                        }
+                    });
+                }
+            } else {
+                this.$("#newFolderName").val('Only letters, numbers or slash(-,_) admitted');
             }
         },
         reset: function() {
