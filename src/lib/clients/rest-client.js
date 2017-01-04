@@ -124,7 +124,10 @@ class RestClient {
                 // request.setRequestHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
                 request.setRequestHeader("Content-type", "application/json");
                 request.send(JSON.stringify(options.data));
-            } else {
+            } if (method === "POST" && options !== undefined) {
+                console.log(options);
+                request.send(options);
+            } else{
                 console.log("Calling GET");
                 request.send();
             }
