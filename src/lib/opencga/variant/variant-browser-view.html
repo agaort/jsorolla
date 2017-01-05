@@ -43,31 +43,39 @@
                                   consequence-types="{{consequenceTypes}}" query="[[query]]" search="[[search]]" variant="{{variant}}" on-selected="selectedGene" style="font-size: 12px">
             </variant-browser-grid>
 
-            <!-- Bottom tabs withspecific variant information -->
-            <h3>Variant: {{variant}}</h3>
-            <div style="padding-top: 20px">
-                <ul id="{{prefix}}ViewTabs" class="nav nav-tabs" role="tablist">
-                    <li role="presentation" class="active"><a href="#{{prefix}}Annotation" role="tab" data-toggle="tab" class="variant-tab-title">Advanced Annotation</a></li>
-                    <li role="presentation"><a href="#{{prefix}}GenomeView" role="tab" data-toggle="tab" class="variant-tab-title">Genome Context</a></li>
-                    <li role="presentation"><a href="#{{prefix}}Genotype" role="tab" data-toggle="tab" class="variant-tab-title">Genotypes & Files</a></li>
-                </ul>
+            <div hidden$="{{checkVariant(variant)}}">
+                <br>
+                <h3>Please select a variant to view variant's detailed annotation</h3>
+            </div>
 
-                <div class="tab-content" style="height: 680px">
+            <!-- Bottom tabs with specific variant information -->
+            <div style="padding-top: 20px" hidden$="{{!checkVariant(variant)}}">
+                <h3>Variant: {{variant}}</h3>
+                <div style="padding-top: 20px">
+                    <ul id="{{prefix}}ViewTabs" class="nav nav-tabs" role="tablist">
+                        <li role="presentation" class="active"><a href="#{{prefix}}Annotation" role="tab" data-toggle="tab" class="variant-tab-title">Advanced Annotation</a></li>
+                        <li role="presentation"><a href="#{{prefix}}GenomeView" role="tab" data-toggle="tab" class="variant-tab-title">Genome Context</a></li>
+                        <!--<li role="presentation"><a href="#{{prefix}}Genotype" role="tab" data-toggle="tab" class="variant-tab-title">Genotypes & Files</a></li>-->
+                    </ul>
 
-                    <!--Annotation Tab-->
-                    <div role="tabpanel" class="tab-pane active" id="{{prefix}}Annotation">
-                        <cellbase-variantannotation-view data="{{variant}}" prefix="{{prefix}}" cellbase-client="{{cellbaseClient}}" mode="vertical" style="font-size: 12px"></cellbase-variantannotation-view>
-                    </div>
+                    <div class="tab-content" style="height: 680px">
 
-                    <!--Genome Context Tab-->
-                    <div role="tabpanel" class="tab-pane" id="{{prefix}}GenomeView">
-                        <!--<br>-->
-                        <!--<genome-context></genome-context>-->
-                    </div>
+                        <!--Annotation Tab-->
+                        <div role="tabpanel" class="tab-pane active" id="{{prefix}}Annotation">
+                            <cellbase-variantannotation-view data="{{variant}}" prefix="{{prefix}}" cellbase-client="{{cellbaseClient}}" mode="vertical"
+                                                             consequence-types="{{consequenceTypes}}" style="font-size: 12px"></cellbase-variantannotation-view>
+                        </div>
 
-                    <!--Genotypes & Files Tab-->
-                    <div role="tabpanel" class="tab-pane" id="{{prefix}}Genotype">
-                        Not implemented yet!
+                        <!--Genome Context Tab-->
+                        <div role="tabpanel" class="tab-pane" id="{{prefix}}GenomeView">
+                            <!--<br>-->
+                            <!--<genome-context></genome-context>-->
+                        </div>
+
+                        <!--Genotypes & Files Tab-->
+                        <!--<div role="tabpanel" class="tab-pane" id="{{prefix}}Genotype">-->
+                        <!--Not implemented yet!-->
+                        <!--</div>-->
                     </div>
                 </div>
             </div>
@@ -102,6 +110,9 @@
                 proteinSubstitutionScores: {
                     type: Object
                 },
+                consequenceTypes: {
+                    type: Object
+                },
                 query: {
                     type: Object,
                     notify: true
@@ -128,6 +139,9 @@
                 if (typeof this.prefix === "undefined" || this.prefix == "") {
                     this.prefix = "view" + Utils.randomString(6);
                 }
+            },
+            checkVariant: function(variant) {
+                return variant.split(':').length > 2;
             },
             selectedGene: function (e) {
                 this.fire('propagate', {gene: e.detail.gene});

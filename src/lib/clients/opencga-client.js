@@ -170,6 +170,9 @@ class OpenCGAParentClass {
                 options = params;
             }else if (method === "POST") {
                 options["data"] = params["body"];
+                if (action === "upload") {
+                    options["post-method"] = "form";
+                }
             }
             console.log(url);
             // if the URL query fails we try with next host
@@ -179,7 +182,12 @@ class OpenCGAParentClass {
     }
 
     _createRestUrl(host, version, category1, ids1, category2, ids2, action) {
-        let url = "http://" + host + "/webservices/rest/" + version + "/" + category1 + "/";
+        let url;
+        if (host.startsWith("https://")) {
+            url = host + "/webservices/rest/" + version + "/" + category1 + "/";
+        } else {
+            url = "http://" + host + "/webservices/rest/" + version + "/" + category1 + "/";
+        }
 
         // Some web services do not need IDs
         if (typeof ids1 != "undefined" && ids1 != null) {
@@ -605,6 +613,27 @@ class Files extends OpenCGAParentClass {
     }
 
     upload(params, options) {
+        if (params === undefined) {
+            return;
+        }
+
+        if (!params.hasOwnProperty("body")) {
+            let aux = {
+                body: params
+            };
+            params = aux;
+        }
+
+        if (params.body.hasOwnProperty("sid")) {
+            params["sid"] = params.body.sid;
+            delete params.body.sid;
+        }
+
+        if (options === undefined) {
+            options = {};
+        }
+        options["method"] = "POST";
+
         return this.get("files", undefined, "upload", params, options);
     }
 }
@@ -745,6 +774,10 @@ class Cohorts extends OpenCGAParentClass {
 
     stats(id, params, options) {
         return this.get("cohorts", id, "stats", params, options);
+    }
+
+    search(params, options) {
+        return this.get("cohorts", undefined, "search", params, options);
     }
 
     info(id, params, options) {

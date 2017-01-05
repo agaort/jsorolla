@@ -79,13 +79,12 @@
             }
 
             select + select {
-                margin-left: 20px;
+                margin-left: 10px;
             }
 
             select + input {
-                margin-left: 20px;
+                margin-left: 10px;
             }
-
         </style>
 
         <div>
@@ -195,20 +194,23 @@
                                 <a class="collapsed" role="button" data-toggle="collapse" data-parent="#{{prefix}}Accordion"
                                    href="#{{prefix}}Studies" aria-expanded="true" aria-controls="{{prefix}}Studies">
                                     Studies
+                                    <div style="float: right" class="tooltip-div">
+                                        <a data-toggle="tooltip" title="Description goes here!"><i class="fa fa-info-circle" aria-hidden="true"></i></a>
+                                    </div>
                                 </a>
                             </h4>
                         </div>
                         <div id="{{prefix}}Studies" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="{{prefix}}StudiesHeading">
                             <div class="panel-body">
-                                <select class="form-control" id="includeOtherStudy" style="width: 50%;">
-                                    <option selected>None</option>
-                                    <option>In</option>
-                                    <option>Not In</option>
-                                    <option>At least</option>
+                                <select class="form-control" id="includeOtherStudy" style="width: 50%;" on-change="updateQueryFilters">
+                                    <option value="none" selected>None</option>
+                                    <option value="in">In</option>
+                                    <option value="not in">Not In</option>
+                                    <option value="atleast">At least</option>
                                 </select>
-                                <div>
-                                    <template is="dom-repeat" items="{{studies}}" filter="isDifferentStudy">
-                                        <input type="checkbox" value="{{item.alias}}"> {{item.alias}}<br>
+                                <div id="differentStudies">
+                                    <template is="dom-repeat" items="{{differentStudies}}">
+                                        <input type="checkbox" value="{{item.alias}}" data-id="{{item.id}}" on-change="updateQueryFilters"> {{item.alias}}<br>
                                     </template>
                                 </div>
                             </div>
@@ -322,39 +324,37 @@
                     <div id="{{prefix}}ProteinSubstitutionScore" class="panel-collapse collapse" role="tabpanel" aria-labelledby="{{prefix}}ProteinSubstitutionScoreHeading">
                         <div class="panel-body">
                             <div>
-                                <label>SIFT</label><br>
+                                <label style="font-weight: normal;">SIFT</label><br>
                                 <select class="options" name="Sift" id="{{prefix}}SiftValues" style="width: 90px" on-change="checkScore">
-                                    <option value="none" selected>None</option>
+                                    <option value="score" selected>Score...</option>
                                     <option value="tolerated">Tolerated</option>
                                     <option value="deleterious">Deleterious</option>
-                                    <option value="score">Score...</option>
                                 </select>
-                                <select name="siftOperator" id="{{prefix}}SiftOperator" on-change="updateQueryFilters" disabled>
+                                <select name="siftOperator" id="{{prefix}}SiftOperator" on-change="updateQueryFilters">
                                     <option value="<" selected><</option>
                                     <option value="<="><=</option>
                                     <option value=">">></option>
                                     <option value=">=">>=</option>
                                 </select>
-                                <input type="text" value="" class="custom-sized-input" id="{{prefix}}SiftInput" name="Sift" on-keyup="updateQueryFilters" disabled>
-                            </div>
+                                <input type="text" value="" class="custom-sized-input" id="{{prefix}}SiftInput" name="Sift" on-keyup="updateQueryFilters">
+                            </div><br>
                             <div>
-                                <label>Polyphen</label><br>
+                                <label style="font-weight: normal;">Polyphen</label><br>
                                 <select class="options" name="Polyphen" id="{{prefix}}PolyphenValues" style="width: 90px" on-change="checkScore">
-                                    <option value="none" selected>None</option>
+                                    <option value="score" selected>Score...</option>
                                     <option value="benign">Benign</option>
                                     <option value="unknown">Unknown</option>
                                     <option value="possibly damaging">Possibly damaging</option>
                                     <option value="probably damaging">Probably damaging</option>
                                     <option value="possibly damaging,probably damaging">Possibly & Probably damaging</option>
-                                    <option value="score">Score...</option>
                                 </select>
-                                <select name="polyphenOperator" id="{{prefix}}PolyphenOperator" on-change="updateQueryFilters" disabled>
+                                <select name="polyphenOperator" id="{{prefix}}PolyphenOperator" on-change="updateQueryFilters">
                                     <option value="<" selected><</option>
                                     <option value="<="><=</option>
                                     <option value=">">></option>
                                     <option value=">=">>=</option>
                                 </select>
-                                <input type="text" value="" class="custom-sized-input" id="{{prefix}}PolyphenInput" name="Polyphen" on-keyup="updateQueryFilters" disabled>
+                                <input type="text" value="" class="custom-sized-input" id="{{prefix}}PolyphenInput" name="Polyphen" on-keyup="updateQueryFilters">
                             </div>
                         </div>
                     </div>
@@ -479,8 +479,8 @@
                 <div class="panel panel-default">
                     <div class="panel-heading" role="tab" id="{{prefix}}CaddFilterHeading">
                         <h4 class="panel-title">
-                            <a class="collapsed" role="button" data-toggle="collapse" data-parent="#{{prefix}}Accordion" href="#{{prefix}}CaddFilter" aria-expanded="false" aria-controls="{{prefix}}ConservationFilter">
-                                Cadd
+                            <a class="collapsed" role="button" data-toggle="collapse" data-parent="#{{prefix}}Accordion" href="#{{prefix}}CaddFilter" aria-expanded="false" aria-controls="{{prefix}}CaddFilter">
+                                CADD
                             </a>
                         </h4>
                     </div>
@@ -540,10 +540,12 @@
                     type: String
                 },
                 study: {
-                    type: Object
+                    type: Object,
+                    observer: 'updateDifferentStudies'
                 },
                 studies: {
-                    type: Array
+                    type: Array,
+                    observer: 'updateDifferentStudies'
                 },
                 opencgaClient: {
                     type: Object
@@ -615,8 +617,16 @@
             moreStudiesPresent: function (studies) {
                 return studies.length > 1;
             },
-            isDifferentStudy: function (item) {
-                return item.alias != this.study.alias;
+            updateDifferentStudies: function () {
+                let differentStudies = [];
+                if (typeof this.study !== "undefined" && typeof this.studies !== "undefined") {
+                    for (let i = 0; i < this.studies.length; i++) {
+                        if (this.study.alias != this.studies[i].alias) {
+                            differentStudies.push(this.studies[i]);
+                        }
+                    }
+                    this.differentStudies = differentStudies;
+                }
             },
             updateConsequenceTypeFilter: function(e) {
                 let soTerms = [];
@@ -649,6 +659,17 @@
             },
             setQueryFilters: function (query) {
                 let _this = this;
+
+                // Studies
+                if (typeof query.studies === "undefined") {
+                    if (this.$$("#includeOtherStudy") != null && this.$$("#differentStudies") != null) {
+                        this.$$("#includeOtherStudy").value = "none";
+                        let checkBoxes = this.$$("#differentStudies").querySelectorAll("input:checked");
+                        for (let i = 0; i < checkBoxes.length; i++) {
+                            checkBoxes[i].checked = false;
+                        }
+                    }
+                }
 
                 // Position and  Gene or Variant Ids
                 this.$$("#" + this.prefix + "LocationTextarea").value = typeof query.region !== "undefined"? query.region : "";
@@ -715,16 +736,16 @@
                     } else {
                         this.$$("#" + this.prefix + "SiftValues").value = query.sift;
                         this.$$("#" + this.prefix + "SiftInput").value = "";
-                        this.$$("#" + this.prefix + "SiftOperator").value = "<"
+                        this.$$("#" + this.prefix + "SiftOperator").value = "<";
                     }
                     this.$$("#" + this.prefix + "SiftInput").disabled = !(query.sift.startsWith("<") || query.sift.startsWith(">"));
                     this.$$("#" + this.prefix + "SiftOperator").disabled = !(query.sift.startsWith("<") || query.sift.startsWith(">"));
                 } else {
                     this.$$("#" + this.prefix + "SiftOperator").value = "<";
-                    this.$$("#" + this.prefix + "SiftValues").value = "none";
+                    this.$$("#" + this.prefix + "SiftValues").value = "score";
                     this.$$("#" + this.prefix + "SiftInput").value = "";
-                    this.$$("#" + this.prefix + "SiftInput").disabled = true;
-                    this.$$("#" + this.prefix + "SiftOperator").disabled = true;
+                    this.$$("#" + this.prefix + "SiftInput").disabled = false;
+                    this.$$("#" + this.prefix + "SiftOperator").disabled = false;
                 }
 
                 // Polyphen
@@ -742,10 +763,10 @@
                     this.$$("#" + this.prefix + "PolyphenOperator").disabled = !(query.polyphen.startsWith("<") || query.polyphen.startsWith(">"));
                 } else {
                     this.$$("#" + this.prefix + "PolyphenOperator").value = "<";
-                    this.$$("#" + this.prefix + "PolyphenValues").value = "none";
+                    this.$$("#" + this.prefix + "PolyphenValues").value = "score";
                     this.$$("#" + this.prefix + "PolyphenInput").value = "";
-                    this.$$("#" + this.prefix + "PolyphenInput").disabled = true;
-                    this.$$("#" + this.prefix + "PolyphenOperator").disabled = true;
+                    this.$$("#" + this.prefix + "PolyphenInput").disabled = false;
+                    this.$$("#" + this.prefix + "PolyphenOperator").disabled = false;
                 }
 
                 // Conservation
@@ -832,10 +853,40 @@
                     _filters.genotype = this.sampleGenotypes;
                 }
 
-                // Region
-                if (this.$$("#" + this.prefix + "LocationTextarea").value != "") {
-                    _filters.region = this.$$("#" + this.prefix + "LocationTextarea").value;
+                // Studies
+                if (typeof this.$$("#includeOtherStudy") !== "undefined" && this.$$("#includeOtherStudy") != null && this.$$("#includeOtherStudy").value != "none") {
+                    let studies = this.$$("#differentStudies").querySelectorAll("input:checked");
+                    let ids = [];
+                    if (studies.length > 0) {
+                        // Add the study id that we are browsing currently
+                        ids.push(this.study.alias);
+                        for (let i = 0; i < studies.length; i++) {
+//                            ids.push(studies[i].dataId);
+                            ids.push(studies[i].value);
+                        }
+                    }
+
+                    switch (this.$$("#includeOtherStudy").value) {
+                        case "in":
+                            _filters.studies = ids.join(';');
+                            break;
+                        case "atleast":
+                            _filters.studies = ids.join(',');
+                            break;
+                        case "not in":
+                            let notInStudies = [];
+                            for (let j = 0; j < ids.length; j++) {
+                                notInStudies.push("!" + ids[j]);
+                            }
+                            _filters.studies = notInStudies.join(";");
+                            break;
+                    }
                 }
+
+                // Region
+                    if (this.$$("#" + this.prefix + "LocationTextarea").value != "") {
+                        _filters.region = this.$$("#" + this.prefix + "LocationTextarea").value;
+                    }
 
                 // Gene or Variant Id
                 if (this.$$("#" + this.prefix + "GeneSnpTextarea").value != "") {
@@ -864,7 +915,7 @@
                         let study = _this.populationFrequencies.studies[i].id;
                         for (let j = 0; j < _this.populationFrequencies.studies[i].populations.length; j++) {
                             let population = _this.populationFrequencies.studies[i].populations[j].id;
-                            if (this.$$("#" + this.prefix + study + population).value != "") {
+                            if (this.$$("#" + this.prefix + study + population).value != "" || this.$$("#" + this.prefix + study + population + "Operator").value != "<") {
                                 let operator = this.$$("#" + this.prefix + study + population + "Operator").value;
                                 let pf = study + ":" + population + operator + this.$$("#" + this.prefix + study + population).value;
                                 popFreq.push(pf);
@@ -875,33 +926,30 @@
                 if (popFreq.length > 0) {
                     _filters["annot-population-maf"] = popFreq.join(';');
                 }
+
                 // Protein Substitution scores
-                if (this.$$("#" + this.prefix + "SiftValues").value != "none") {
-                    if (this.$$("#" + this.prefix + "SiftValues").value == "score") {
-                        _filters.sift = this.$$("#" + this.prefix + "SiftOperator").value + this.$$("#" + this.prefix + "SiftInput").value;
-                    } else {
-                        _filters.sift = this.$$("#" + this.prefix + "SiftValues").value;
-                    }
+                if (this.$$("#" + this.prefix + "SiftValues").value == "score" && this.$$("#" + this.prefix + "SiftInput").value != "" || this.$$("#" + this.prefix + "SiftOperator").value != "<") {
+                    _filters.sift = this.$$("#" + this.prefix + "SiftOperator").value + this.$$("#" + this.prefix + "SiftInput").value;
+                } else if (this.$$("#" + this.prefix + "SiftValues").value != "score") {
+                    _filters.sift = this.$$("#" + this.prefix + "SiftValues").value;
                 }
-                if (this.$$("#" + this.prefix + "PolyphenValues").value != "none") {
-                    if (this.$$("#" + this.prefix + "PolyphenValues").value == "score") {
-                        _filters.polyphen = this.$$("#" + this.prefix + "PolyphenOperator").value + this.$$("#" + this.prefix + "PolyphenInput").value;
-                    } else {
-                        _filters.polyphen = this.$$("#" + this.prefix + "PolyphenValues").value;
-                    }
+                if (this.$$("#" + this.prefix + "PolyphenValues").value == "score" && this.$$("#" + this.prefix + "PolyphenInput").value != "" || this.$$("#" + this.prefix + "PolyphenOperator").value != "<") {
+                    _filters.polyphen = this.$$("#" + this.prefix + "PolyphenOperator").value + this.$$("#" + this.prefix + "PolyphenInput").value;
+                } else if (this.$$("#" + this.prefix + "PolyphenValues").value != "score") {
+                    _filters.polyphen = this.$$("#" + this.prefix + "PolyphenValues").value;
                 }
 
                 // Conservation
                 let conserArr = [];
-                if (this.$$("#" + this.prefix + "PhylopInput").value != "") {
+                if (this.$$("#" + this.prefix + "PhylopInput").value != "" || this.$$("#" + this.prefix + "PhylopOperator").value != "<") {
                     let phylop = "phylop" + this.$$("#" + this.prefix + "PhylopOperator").value + this.$$("#" + this.prefix + "PhylopInput").value;
                     conserArr.push(phylop);
                 }
-                if (this.$$("#" + this.prefix + "PhastconsInput").value != "") {
+                if (this.$$("#" + this.prefix + "PhastconsInput").value != "" || this.$$("#" + this.prefix + "PhastconsOperator").value != "<") {
                     let phastCons = "phastCons" + this.$$("#" + this.prefix + "PhastconsOperator").value + this.$$("#" + this.prefix + "PhastconsInput").value;
                     conserArr.push(phastCons);
                 }
-                if (this.$$("#" + this.prefix + "GerpInput").value != "") {
+                if (this.$$("#" + this.prefix + "GerpInput").value != "" || this.$$("#" + this.prefix + "GerpOperator").value != "<") {
                     let gerp = "gerp" + this.$$("#" + this.prefix + "GerpOperator").value + this.$$("#" + this.prefix + "GerpInput").value;
                     conserArr.push(gerp);
                 }

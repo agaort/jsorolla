@@ -19,7 +19,7 @@
         <style is="custom-style" include="jso-styles"></style>
 
         <div>
-            <table id="{{prefix}}VariantBrowserGrid" data-search="true" data-show-columns="true" data-pagination="true" data-page-list="[10, 25, 50]"
+            <table id="{{prefix}}VariantBrowserGrid" data-show-columns="true" data-pagination="true" data-page-list="[10, 25, 50]"
                    data-show-pagination-switch="true" data-show-export="true">
                 <thead style="background-color: #eee"></thead>
             </table>
@@ -47,6 +47,10 @@
                 },
                 opencgaClient: {
                     type: Object
+                },
+                cellbaseClient: {
+                    type: Object,
+                    observer: 'renderFromServer'
                 },
                 samples: {
                     type: Array,
@@ -126,11 +130,20 @@
                 this.renderFromServer();
             },
             renderFromServer: function () {
+                this.variant = ""; // Empty the variant every time the grid is loaded
                 let _this = this;
-                if (this.opencgaClient instanceof OpenCGAClient && typeof this.project !== "undefined" && typeof this.study !== "undefined") {
+                if (typeof OpenCGAClient !== "undefined" && this.opencgaClient instanceof OpenCGAClient && typeof this.project !== "undefined" && typeof this.study !== "undefined") {
 
-                    if (typeof this.project !== "undefined" && typeof this.study.alias !== "undefined") {
-                        this._url = 'http://' + this.opencgaClient.getConfig().host + '/webservices/rest/v1/studies/' + this.project + ':' + this.study.alias + '/variants';
+                    if (this.opencgaClient.getConfig().host.startsWith("https://")) {
+                        this._url = this.opencgaClient.getConfig().host;
+                    } else {
+                        this._url = 'http://' + this.opencgaClient.getConfig().host;
+                    }
+
+                    if (typeof _this.query !== "undefined" && typeof _this.query.studies !== "undefined" && _this.query.studies != "") {
+                        this._url = this._url + '/webservices/rest/v1/analysis/variant/query';
+                    } else if (typeof this.project !== "undefined" && typeof this.study.alias !== "undefined") {
+                        this._url = this._url + '/webservices/rest/v1/studies/' + this.project + ':' + this.study.alias + '/variants';
                     } else {
                         return;
                     }
@@ -145,7 +158,7 @@
                     if (typeof this.samples !== "undefined" && this.samples.length > 0) {
                         let sampleNames = [];
                         for (sampleIdx in this.samples) {
-                            sampleNames.push(this.samples[sampleIdx].name)
+                            sampleNames.push(this.samples[sampleIdx].name);
                         }
                         queryParams.returnedSamples = sampleNames.join();
                     } else {
@@ -192,13 +205,61 @@
 //                        }
                     });
                     $('#' + _this.prefix + 'VariantBrowserGrid').bootstrapTable('showLoading');
+                } else if (this.cellbaseClient instanceof CellBaseClient) {
+                    $('#' + _this.prefix + 'VariantBrowserGrid').bootstrapTable('destroy');
+                    let _numTotal = -1;
+
+                    let url = "";
+                    if (this.cellbaseClient._config.hosts[0].startsWith("https://")) {
+                        url = this.cellbaseClient._config.hosts[0];
+                    } else {
+                        url = 'http://' + this.cellbaseClient._config.hosts[0];
+                    }
+
+                    let queryParams = {
+                        timeout: 10000
+                    };
+
+                    Object.assign(queryParams, _this.query); // Important : Adding the query object contents to queryParams
+
+                    url = url + '/webservices/rest/v4/' + this.cellbaseClient._config.species + '/feature/variation/search';
+                    $('#' + _this.prefix + 'VariantBrowserGrid').bootstrapTable({
+                        url: url,
+                        method: 'get',
+                        sidePagination: 'server',
+                        queryParams: function (params) {
+                            queryParams.limit = params.limit;
+                            queryParams.skip = params.offset;
+                            return queryParams;
+                        },
+                        responseHandler: function (res) {
+                            if (_numTotal == -1) {
+                                _numTotal = res.response[0].numTotalResults;
+                                _this.count = _numTotal;
+                            }
+                            return {total: _numTotal, rows: res.response[0].result}
+                        },
+                        columns: _this.cols,
+                        onClickRow: function (row, $element) {
+                            _this.variant = row.chromosome + ":" + row.start + ":" + row.reference + ":" + row.alternate;
+                            $('.success').removeClass('success');
+                            $($element).addClass('success');
+                        }
+                    });
+                    $('#' + _this.prefix + 'VariantBrowserGrid').bootstrapTable('showLoading');
                 }
             },
             renderFromLocal: function () {
+                let _this = this;
                 $('#' + this.prefix + 'VariantBrowserGrid').bootstrapTable('destroy');
                 $('#' + this.prefix + 'VariantBrowserGrid').bootstrapTable({
                     data: this.data,
-                    columns: this.cols
+                    columns: this.cols,
+                    onClickRow: function (row, $element) {
+                        _this.variant = row.chromosome + ":" + row.start + ":" + row.reference + ":" + row.alternate;
+                        $('.success').removeClass('success');
+                        $($element).addClass('success');
+                    }
                 });
             },
             showGene: function(geneName) {
@@ -210,7 +271,7 @@
                 return "<span style='white-space: nowrap'>" + row.chromosome + ':' + row.start + " " + ref + '/' + alt + "</span>";
             },
             snpFormatter: function (value, row, index) {
-                if (row.id.startsWith("rs")) {
+                if (typeof row.id !== "undefined" && row.id.startsWith("rs")) {
                     return "<a target='_blank' href='http://grch37.ensembl.org/Homo_sapiens/Variation/Explore?vdb=variation;v=" + row.id + "'>" + row.id + "</a>";
                 } else {
                     return '-';
@@ -224,8 +285,12 @@
                         for (let i = 0; i < row.annotation.consequenceTypes.length; i++) {
                             if (typeof row.annotation.consequenceTypes[i].geneName !== "undefined" && row.annotation.consequenceTypes[i].geneName != ""
                                     && typeof visited[row.annotation.consequenceTypes[i].geneName] === "undefined") {
-                                geneLinks.push('<a style="cursor: pointer;white-space: nowrap" href="#gene/' + this.field.context.project +'/' +
+                                if (typeof this.field.context.project !== "undefined" && typeof this.field.context.study !== "undefined") {
+                                    geneLinks.push('<a style="cursor: pointer;white-space: nowrap" href="#gene/' + this.field.context.project +'/' +
                                         this.field.context.study.alias + '/' + row.annotation.consequenceTypes[i].geneName + '">' + row.annotation.consequenceTypes[i].geneName + '</a>');
+                                } else {
+                                    geneLinks.push('<a style="cursor: pointer;white-space: nowrap">' + row.annotation.consequenceTypes[i].geneName + '</a>')
+                                }
                                 visited[row.annotation.consequenceTypes[i].geneName] = true;
                             }
                         }
@@ -266,11 +331,6 @@
                                         }
 
                                     }
-//                                    if (typeof this.field.context.consequenceTypeToColor !== "undefined" && typeof this.field.context.consequenceTypeToColor[consequenceTypeName] !== "undefined") {
-//                                        consequenceTypesArr.push('<span style="color: ' + this.field.context.consequenceTypeToColor[consequenceTypeName] + '">' + consequenceTypeName + '</span>');
-//                                    } else {
-//                                        consequenceTypesArr.push('<span>' + consequenceTypeName + '</span>');
-//                                    }
                                     visited.add(consequenceTypeName);
                                 }
                             }
@@ -423,7 +483,7 @@
                             }
                         }
                         if (traits.length > 0) {
-                            return traits.join("\n");
+                            return traits.join('<br>');
                         }
                     }
                 }
@@ -704,15 +764,16 @@
                             field: 'cosmic',
                             colspan: 1,
                             rowspan: 1,
-                            halign: 'center'
-                        },
-                        {
-                            title: 'GWAS',
-                            field: 'gwas',
-                            colspan: 1,
-                            rowspan: 1,
+                            formatter: this.clinvarFormatter,
                             halign: 'center'
                         }
+//                        {
+//                            title: 'GWAS',
+//                            field: 'gwas',
+//                            colspan: 1,
+//                            rowspan: 1,
+//                            halign: 'center'
+//                        }
                     ]
                 ];
                 return initCols;

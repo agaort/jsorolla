@@ -58,7 +58,8 @@
                     </div>
                     <!--Consequence types Tab-->
                     <div role="tabpanel" class="tab-pane" id="{{prefix}}VariantAnnotationConsequenceTypes">
-                        <cellbase-annotation-consequencetype-grid data="{{variantAnnotation.consequenceTypes}}" prefix="{{prefix}}annotationView"></cellbase-annotation-consequencetype-grid>
+                        <cellbase-annotation-consequencetype-grid data="{{variantAnnotation.consequenceTypes}}" prefix="{{prefix}}annotationView"
+                                                                  consequence-types="{{consequenceTypes}}"></cellbase-annotation-consequencetype-grid>
                     </div>
                     <!--Population frequency Tab-->
                     <div role="tabpanel" class="tab-pane" id="{{prefix}}VariantAnnotationPopulationFrequencies">
@@ -75,64 +76,74 @@
                     <div role="tabpanel" class="tab-pane" id="{{prefix}}VariantAnnotationVTA">
                         <template is="dom-if" if="{{check(variantAnnotation)}}">
                             <h4>Clinvar</h4>
-                            <table class="table table-hover table-bordered">
-                                <thead style="background-color: #eee">
-                                <tr>
-                                    <th>Accession</th>
-                                    <th>Clinical Significance</th>
-                                    <th>Traits</th>
-                                    <th>Gene Names</th>
-                                    <th>Review Status</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                <template is="dom-repeat"
-                                          items="{{variantAnnotation.variantTraitAssociation.clinvar}}">
+                            <div hidden$="{{!checkClinvar(variantAnnotation.variantTraitAssociation.clinvar)}}">
+                                <table class="table table-hover table-bordered">
+                                    <thead style="background-color: #eee">
                                     <tr>
-                                        <td>{{item.accession}}</td>
-                                        <td>{{item.clinicalSignificance}}</td>
-                                        <td>
-                                            <template is="dom-repeat" items="{{item.traits}}" as="trait">{{trait}}<br></template>
-                                        </td>
-                                        <td>
-                                            <template is="dom-repeat" items="{{item.geneNames}}" as="geneName">{{geneName}} <br></template>
-                                        </td>
-                                        <td>{{item.reviewStatus}}</td>
+                                        <th>Accession</th>
+                                        <th>Clinical Significance</th>
+                                        <th>Traits</th>
+                                        <th>Gene Names</th>
+                                        <th>Review Status</th>
                                     </tr>
-                                </template>
-                                </tbody>
-                            </table>
+                                    </thead>
+                                    <tbody>
+                                    <template is="dom-repeat"
+                                              items="{{variantAnnotation.variantTraitAssociation.clinvar}}">
+                                        <tr>
+                                            <td>{{item.accession}}</td>
+                                            <td>{{item.clinicalSignificance}}</td>
+                                            <td>
+                                                <template is="dom-repeat" items="{{item.traits}}" as="trait">{{trait}}<br></template>
+                                            </td>
+                                            <td>
+                                                <template is="dom-repeat" items="{{item.geneNames}}" as="geneName">{{geneName}} <br></template>
+                                            </td>
+                                            <td>{{item.reviewStatus}}</td>
+                                        </tr>
+                                    </template>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div hidden$="{{checkClinvar(variantAnnotation.variantTraitAssociation.clinvar)}}">
+                                No ClinVar data available
+                            </div>
                             <h4>Cosmic</h4>
-                            <table class="table table-hover table-bordered">
-                                <thead style="background-color: #eee">
-                                <tr>
-                                    <th>Mutation Id</th>
-                                    <th>Primary Site</th>
-                                    <th>Site Subtype</th>
-                                    <th>Primary Histology</th>
-                                    <th>Histology Subtype</th>
-                                    <th>Sample Source</th>
-                                    <th>Tumour Origin</th>
-                                    <th>Gene Name</th>
-                                    <th>Mutation Somatic Status</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                <template is="dom-repeat" items="{{variantAnnotation.variantTraitAssociation.cosmic}}">
+                            <div hidden$="{{!checkCosmic(variantAnnotation.variantTraitAssociation.cosmic)}}">
+                                <table class="table table-hover table-bordered">
+                                    <thead style="background-color: #eee">
                                     <tr>
-                                        <td>{{item.mutationId}}</td>
-                                        <td>{{item.primarySite}}</td>
-                                        <td>{{item.siteSubtype}}</td>
-                                        <td>{{item.primaryHistology}}</td>
-                                        <td>{{item.histologySubtype}}</td>
-                                        <td>{{item.sampleSource}}</td>
-                                        <td>{{item.tumourOrigin}}</td>
-                                        <td>{{item.geneName}}</td>
-                                        <td>{{item.mutationSomaticStatus}}</td>
+                                        <th>Mutation Id</th>
+                                        <th>Primary Site</th>
+                                        <th>Site Subtype</th>
+                                        <th>Primary Histology</th>
+                                        <th>Histology Subtype</th>
+                                        <th>Sample Source</th>
+                                        <th>Tumour Origin</th>
+                                        <th>Gene Name</th>
+                                        <th>Mutation Somatic Status</th>
                                     </tr>
-                                </template>
-                                </tbody>
-                            </table>
+                                    </thead>
+                                    <tbody>
+                                    <template is="dom-repeat" items="{{variantAnnotation.variantTraitAssociation.cosmic}}">
+                                        <tr>
+                                            <td>{{item.mutationId}}</td>
+                                            <td>{{item.primarySite}}</td>
+                                            <td>{{item.siteSubtype}}</td>
+                                            <td>{{item.primaryHistology}}</td>
+                                            <td>{{item.histologySubtype}}</td>
+                                            <td>{{item.sampleSource}}</td>
+                                            <td>{{item.tumourOrigin}}</td>
+                                            <td>{{item.geneName}}</td>
+                                            <td>{{item.mutationSomaticStatus}}</td>
+                                        </tr>
+                                    </template>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div hidden$="{{checkCosmic(variantAnnotation.variantTraitAssociation.cosmic)}}">
+                                No Cosmic data available
+                            </div>
                         </template>
                         <template is="dom-if" if="{{!check(variantAnnotation)}}">
                             No ClinVar and Cosmic data available
@@ -158,6 +169,9 @@
                     observer: '_variantChanged'
                 },
                 variantAnnotation: {
+                    type: Object
+                },
+                consequenceTypes: {
                     type: Object
                 },
                 prefix: {
@@ -190,9 +204,15 @@
             checkHorizontal: function (mode) {
                 return this.mode == "horizontal";
             },
+            checkClinvar: function (clinvar) {
+                return typeof clinvar !== "undefined" && clinvar.length > 0;
+            },
+            checkCosmic: function (cosmic) {
+                return typeof cosmic !== "undefined" && cosmic.length > 0;
+            },
             _variantChanged: function () {
                 let _this = this;
-                if (typeof this.cellbaseClient !== "undefined") {
+                if (typeof this.cellbaseClient !== "undefined" && this.data != "") {
                     this.cellbaseClient.get('genomic', 'variant', this.data, 'annotation', {}, {})
                         .then(function (response) {
                             _this.variantAnnotation = response.response[0].result[0];
