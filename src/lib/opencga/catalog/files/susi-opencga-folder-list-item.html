@@ -1,5 +1,6 @@
+<link rel="import" href="../../../../../../iron-flex-layout/iron-flex-layout-classes.html">
 <dom-module id="susi-opencga-folder-list-item">
-    <style is="custom-style" include="jso-styles">
+    <style is="custom-style" include="jso-styles iron-flex">
         :host {
             position: relative;
             display: block;
@@ -29,7 +30,7 @@
             font-weight: lighter !important;
             margin: 2px;
             padding: 10px;
-            height: 25px;
+            height: 15px;
         }
 
         .icon-mode-elem {
@@ -41,9 +42,13 @@
         .icon-mode-elem > .name {
             width: 60px;
         }
+        .float-left{
+            position: relative;
+            float:left;
+        }
     </style>
     <template>
-        <div class="horizontal layout">
+
             <template is="dom-if" if="{{computeViewMode(viewMode, 'list')}}">
                 <div class="row" style="height: 25px">
                     <div class="col-sm-6">
@@ -64,7 +69,6 @@
                     <div class="flex">{{file.name}}</div>
                 </div>
             </template>
-        </div>
     </template>
 </dom-module>
 <script>

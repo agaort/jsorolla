@@ -21,8 +21,8 @@
     <template>
         <div>
             <div class="row">
-                <div class="col-sm-2">
-                    <label>File Browser</label>
+                <div class="col-sm-2" style=" margin-left: 10px">
+                    <label>Projects > Studies</label>
                     <br>
                     <div class="row">
                         <div class="col-sm-12">
@@ -54,9 +54,6 @@
                             <i class="fa fa-eye"></i> File Preview
                         </span>
                         <susi-opencga-file-preview opencga-client={{opencgaClient}} class="container" id="filePreview"></susi-opencga-file-preview>
-                        <!--<div class="container">-->
-                            <!--<code class="wrapped-text">{{contentData}}</code>-->
-                        <!--</div>-->
                     </new-jso-panel>
 
                     <div style="padding: 10px;height: 530px" class="row">
@@ -128,7 +125,7 @@
                                 <div>
                                     <form id="formNewFolder" style="height: 300px">
                                         <div class="form-group row">
-                                            <label for="inputFile" class="col-sm-2 col-form-label">Name</label>
+                                            <label for="newFolderName" class="col-sm-2 col-form-label">Name</label>
                                             <div class="col-sm-10">
                                                 <input type="text" id="newFolderName" class="form-control" required pattern="[a-zA-Z0-9_-]+">
                                             </div>
@@ -137,7 +134,7 @@
                                             <label class="col-sm-2 col-form-label">Path</label>
                                             <div class="col-sm-10">
                                                 <template is="dom-if" if="{{checkStudy(study)}}">
-                                                    <input type="text" class="form-control" value="{{project.alias}}/{{study.alias}}" disabled>
+                                                    <input id="pathFolder" type="text" class="form-control" value="{{project.alias}}/{{study.alias}}" disabled>
                                                 </template>
                                             </div>
                                         </div>
@@ -205,7 +202,8 @@
                     notify: true,
                     value: function() {
                         return []
-                    }
+                    },
+                    observer: 'changePath'
                 },
                 selectedStudy: {
                     type: Object,
@@ -268,12 +266,14 @@
                         switch(filePatterns[filePatterns.length-1]) {
                             case ".vcf":
                                 $("#vcf").prop("checked", true);
-                                _this.fileType = "vcf";
+                                _this.fileType = "VCF";
                                 break;
                             case ".bam":
                                 $("#bam").prop("checked", true);
-                                _this.fileType = "bam";
+                                _this.fileType = "BAM";
                                 break;
+                            default:
+                                _this.fileType = "UNKNOWN"
                         }
                     }
                 }
@@ -293,6 +293,17 @@
 //
 //                ]
 //            };
+
+        },
+        changePath: function() {
+            if ($(document).isReady) {
+                var path = this.project.alias + "/" + this.study.alias;
+                for (var i = 0; i < this.folders.length; i++) {
+                    path = path + "/" + this.folders[i].name;
+                }
+                $("#pathFile").val(path);
+                $("#pathFolder").val(path);
+            }
 
         },
         checkFileModeOk: function(mode, selectedFile) {
@@ -429,20 +440,25 @@
                 }
             }
             if (this.opencgaClient instanceof OpenCGAClient) {
+                var path=".";
+                if(this.folders.length >0){
+                    for(var i= 0; i< this.folders.length; i++){
+                        path=path+"/"+ this.folders[i].name;
+                    }
+                }
                 let params = {
                     sid: this.opencgaClient._config.sessionId,
                     studyId: this.study.id,
                     file: $("#FileToUpload").prop('files')[0],
                     fileFormat: this.fileType,
-                    bioFormat: "MICROARRAY_EXPRESSION_ONECHANNEL_AGILENT",
-                    relativeFilePath: this.project.alias +"/"+this.study.alias+"/"+$("#inputFile").val(),
-                    method:"POST"
+                    bioformat: "NONE",
+                    relativeFilePath: path,
+                    parents:true,
+//                    method:"POST"
                 };
-                let options={
-                    method:"POST"
-                }
-                this.opencgaClient.files().upload(params,options).then(function (response) {
-                    console.log(response)
+                var me = this;
+                this.opencgaClient.files().upload(params).then(function (response) {
+                    me.refreshFolderFiles();
                 });
             }
         },
@@ -459,27 +475,35 @@
             }
 
             var me = this;
-            this.$("#newFolderName").val('');
+//            $("#newFolderName").val('');
             if (this.$.formNewFolder.checkValidity()) {
                 if (this.opencgaClient instanceof OpenCGAClient) {
+                    var path="";
+                    if(this.folders.length >0){
+                        for(var i= 0; i< this.folders.length; i++){
+                            path=path+ this.folders[i].name+"/";
+                        }
+                    }
                     let params = {
                         sid: this.opencgaClient._config.sessionId,
                         studyId: this.study.id,
-                        folder: this.project.alias +"/"+this.study.alias+"/"+$("#newFolderName").val(),
+//                        folders: this.project.alias +"/"+this.study.alias+"/"+$("#newFolderName").val(),
+                        folders: path+$("#newFolderName").val(),
+                        parents:true,
                     }
                     this.opencgaClient.files().createFolder(params).then(function (response){
                         console.log(response);
                         if (response.response[0].error === '' || response.response[0].error == null) {
-                            me.$("#mensajeFolder").val('');
-                            me.$("#newFolderName").val('');
+                            $("#mensajeFolder").val('');
+                            $("#newFolderName").val('');
                             me.refreshFolderFiles();
                         } else {
-                            me.$("#mensajeFolder").val(response.response[0].error);
+                            $("#mensajeFolder").val(response.response[0].error);
                         }
                     });
                 }
             } else {
-                this.$("#newFolderName").val('Only letters, numbers or slash(-,_) admitted');
+                $("#newFolderName").val('Only letters, numbers or slash(-,_) admitted');
             }
         },
         reset: function() {

@@ -166,9 +166,7 @@ class OpenCGAParentClass {
             let url = this._createRestUrl(host, version, category1, ids1, category2, ids2, action, params);
             // if (method === "GET") {
             url = this._addQueryParams(url, params);
-            if(action =="upload"){
-                options = params;
-            }else if (method === "POST") {
+           if (method === "POST") {
                 options["data"] = params["body"];
                 if (action === "upload") {
                     options["post-method"] = "form";
