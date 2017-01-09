@@ -98,7 +98,7 @@
     </style>
     <template>
         <div id="bar" class="row">
-            <span class="bar horizontal layout flex">
+            <span class="bar">
 
                 <button class="btn btn-primary" hidden$="{{checkBack(folder)}}" on-click="handleBack"> <i class="fa fa-arrow-left"></i></button>
                 <!--<button class="btn btn-primary" hidden$="{{isFolderMode(mode)}}" on-click="handleUploadFile"><i class="fa fa-cloud-upload"></i> Upload</button>-->
@@ -428,7 +428,7 @@
         computeIndex: function(selected) {
             if (this.fileName != "") {
                 if (selected != null && selected.index != null && (selected.bioformat == "VARIANT" || selected.bioformat == "ALIGNMENT")) {
-                    return selected.index.status;
+                    return selected.index.status.name;
                 } else {
                     return "--";
                 }
