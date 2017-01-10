@@ -2,8 +2,7 @@
 <link rel="import" href="susi-opencga-folder-list-item.html">
 <link rel="import" href="../../../../../../iron-flex-layout/iron-flex-layout-classes.html">
 <dom-module id="susi-opencga-folder-list">
-    <style is="custom-style" include="jso-styles iron-flex iron-flex-alignment">
-
+    <style is="custom-style" include="jso-styles iron-flex">
 
         #header{
             box-sizing: border-box;
@@ -14,7 +13,6 @@
             height: 25px;
             margin-top:15px;
         }
-
 
         #content.list {
             height: calc(100% - 55px);
@@ -35,7 +33,6 @@
         #content.icon.info {
             height: calc(100% - 90px);
         }
-
 
         susi-opencga-folder-list-item[view-mode='list'] {
             padding: 3px 7px;
@@ -164,11 +161,11 @@
             </div>
         </div>
 
-        <jso-panel modal closable hidden id="createFolderModal">
-            <div class="header"><i class="fa fa-folder"></i> &nbsp; Create folder</div>
-            <susi-opencga-create-folder class="container" id="createfolder" on-folder-created="handleFolderCreated" folder="{{folder}}" study="{{study}}">
-            </susi-opencga-create-folder>
-        </jso-panel>
+        <!--<jso-panel modal closable hidden id="createFolderModal">-->
+            <!--<div class="header"><i class="fa fa-folder"></i> &nbsp; Create folder</div>-->
+            <!--<susi-opencga-create-folder class="container" id="createfolder" on-folder-created="handleFolderCreated" folder="{{folder}}" study="{{study}}">-->
+            <!--</susi-opencga-create-folder>-->
+        <!--</jso-panel>-->
 
 
     </template>
@@ -228,16 +225,16 @@
 //                alert("You must select a study before uploading a file.")
 //            }
 //        },
-        handleCreateFolder: function(e) {
-            if (this.$.createFolderModal.hasAttribute('hidden')) {
-                this.$.createFolderModal.removeAttribute('hidden');
-            } else {
-                this.$.createFolderModal.setAttribute('hidden', '');
-            }
-        },
-        handleFolderCreated: function(e) {
-            this.$.createFolderModal.setAttribute('hidden', '');
-        },
+//        handleCreateFolder: function(e) {
+//            if (this.$.createFolderModal.hasAttribute('hidden')) {
+//                this.$.createFolderModal.removeAttribute('hidden');
+//            } else {
+//                this.$.createFolderModal.setAttribute('hidden', '');
+//            }
+//        },
+//        handleFolderCreated: function(e) {
+//            this.$.createFolderModal.setAttribute('hidden', '');
+//        },
         handleDeleteFile: function(e) {
             if (confirm("Are you sure?")) {
                 this._deleteFile();
