@@ -38,7 +38,7 @@
 
                 <div class="col-sm-9">
                     <div class="well row maincontent">
-                        <susi-opencga-folder-list id="opencgaFolderList" on-fileselect="handleFileSelect" on-openfolder="handleOpenFolder" on-upload-file="handleUploadFile" on-back="handleBackFolder" on-need-refresh="refreshFolderFiles" on-previewfile="handlePreviewFile" study="{{study}}" folder="{{folder}}" files="{{files}}" mode="{{mode}}" disable-icon-view="{{disableIconView}}">
+                        <susi-opencga-folder-list id="opencgaFolderList" opencga-client={{opencgaClient}} on-fileselect="handleFileSelect" on-openfolder="handleOpenFolder" on-upload-file="handleUploadFile" on-back="handleBackFolder" on-need-refresh="refreshFolderFiles" on-previewfile="handlePreviewFile" study="{{study}}" folder="{{folder}}" files="{{files}}" mode="{{mode}}" disable-icon-view="{{disableIconView}}">
                         </susi-opencga-folder-list>
 
                     </div>
@@ -281,19 +281,6 @@
             });
             this._setInitialSelection();
 
-//
-//            var options = {
-//                bootstrap2: false,
-//                showTags: true,
-//                levels: 5,
-//                color: "#428bca",
-//                expandIcon: 'glyphicon glyphicon-chevron-right',
-//                collapseIcon: 'glyphicon glyphicon-chevron-down',
-//                nodeIcon: 'glyphicon glyphicon-bookmark',
-//
-//                ]
-//            };
-
         },
         changePath: function() {
             if ($(document).isReady) {
@@ -453,8 +440,7 @@
                     fileFormat: this.fileType,
                     bioformat: "NONE",
                     relativeFilePath: path,
-                    parents:true,
-//                    method:"POST"
+                    parents:true
                 };
                 var me = this;
                 this.opencgaClient.files().upload(params).then(function (response) {

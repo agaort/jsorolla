@@ -167,13 +167,15 @@
             <!--</susi-opencga-create-folder>-->
         <!--</jso-panel>-->
 
-
     </template>
 </dom-module>
 <script>
     Polymer({
         is: "susi-opencga-folder-list",
         properties: {
+            opencgaClient: {
+                type: Object
+            },
             folder: {
                 type: Object,
                 notify: true,
@@ -238,7 +240,6 @@
         handleDeleteFile: function(e) {
             if (confirm("Are you sure?")) {
                 this._deleteFile();
-
             }
         },
         handleIndexFile: function(e) {
@@ -343,27 +344,27 @@
         _deleteFile: function() {
             var me = this;
             if (this.selected) {
-                OpencgaManager.files.delete({
-                    id: this.selected.id,
-                    query: {
-                        sid: Cookies('bioinfo_sid'),
-                    },
-                    request: {
-                        success: function(response) {
-                            if (response.response[0].errorMsg === '' || response.response[0].errorMsg == null) {
-                                console.log("delete");
-                                console.log(response);
 
-                                me.fire('need-refresh');
-                            } else {
-                                console.log(response.response[0].errorMsg);
-                            }
-                        },
-                        error: function() {
-                            console.log('jso-opencga-folder-list374:Server error, try again later.');
-                        }
+                var  query = {
+                    sid: this.opencgaClient._config.sessionId
+                }
+
+                var me = this;
+                if (this.opencgaClient instanceof OpenCGAClient) {
+                    var p1 = this.opencgaClient.files().remove(this.selected.id,query);
+                    p1.then(function(response){
+                    if (response.response[0].errorMsg === '' || response.response[0].errorMsg == null) {
+                        console.log("delete");
+                        console.log(response);
+                        me.fire('need-refresh');
+                    } else {
+                        console.log(response.response[0].errorMsg);
                     }
-                });
+                    });
+                    p1.catch(function(response){
+                        console.log('susi-opencga-folder-list374:Server error, try again later.');
+                    });
+                }
             }
         },
         _indexFile: function() {
