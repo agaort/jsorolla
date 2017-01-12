@@ -427,11 +427,14 @@
                 }
             }
             if (this.opencgaClient instanceof OpenCGAClient) {
-                var path=".";
+                var path="";
                 if(this.folders.length >0){
                     for(var i= 0; i< this.folders.length; i++){
-                        path=path+"/"+ this.folders[i].name;
+//                        path=path+"/"+ this.folders[i].name;
+                        path= path + this.folders[i].name + "/";
                     }
+                }else{
+                    path=".";
                 }
                 let params = {
                     sid: this.opencgaClient._config.sessionId,
