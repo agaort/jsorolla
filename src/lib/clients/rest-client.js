@@ -92,7 +92,10 @@ class RestClient {
                         console.log("Size: " + event.total + " Bytes");
                         resolve(dataResponse);
                     } else {
-                        console.log(this.response)
+                        console.log(this.response);
+                        if(request.responseURL.includes("content?sid")) {
+                            resolve(this.response);
+                        }
                     }
                 } else {
                     reject(JSON.parse(request.response));
