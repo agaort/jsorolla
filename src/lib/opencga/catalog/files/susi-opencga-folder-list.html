@@ -1,5 +1,6 @@
 <link rel="import" href="susi-opencga-create-folder.html">
 <link rel="import" href="susi-opencga-folder-list-item.html">
+<link rel="import" href="susi-opencga-file-preview.html">
 <link rel="import" href="../../../../../../iron-flex-layout/iron-flex-layout-classes.html">
 <dom-module id="susi-opencga-folder-list">
     <style is="custom-style" include="jso-styles iron-flex">
@@ -103,13 +104,20 @@
                 <button class="btn btn-primary" hidden$="{{checkSelected(selected)}}" on-click="handleDeleteFile">
                     <i class="fa fa-trash"></i>
                 </button>
-                <button class="btn btn-primary" hidden$="{{checkSelectedFile(selected)}}" on-click="handlePreviewFile">
-                    <i class="fa fa-eye"></i>
-                </button>
+                <boostrap-panel hidden$="{{checkSelectedFile(selected)}}" on-boostrapanelclick="handlePreviewFileBoostrap">
+                    <span class="button_panel" ><i class="fa fa-eye"></i></span>
+                    <span class="header_panel">
+                        <i class="fa fa-eye"></i> File Preview
+                    </span>
+                    <susi-opencga-file-preview opencga-client={{opencgaClient}} class="body_panel" id="filePreview"></susi-opencga-file-preview>
+                </boostrap-panel>
+                <!--<button class="btn btn-primary" hidden$="{{checkSelectedFile(selected)}}" on-click="handlePreviewFile">-->
+                    <!--<i class="fa fa-eye"></i>-->
+                <!--</button>-->
                 <button class="btn btn-primary" on-click="handleViewInfo" style="margin-right: 5px;" hidden$="{{checkSelected(selected)}}">
                     <i class="fa fa-info"></i>
                 </button>
-
+               
             </span>
             <span class="horizontal layout izq">
                 <button class="btn btn-primary" on-click="handleViewMode" hidden$="{{disableIconView}}">
@@ -286,6 +294,12 @@
         handlePreviewFile: function(e) {
             if (this.selected) {
                 this.fire('previewfile', this.selected);
+            }
+        },
+        handlePreviewFileBoostrap: function(e){
+            var nameButton = e.detail;
+            if(nameButton =="modalbutton"){
+                this.$.filePreview.file = this.selected;
             }
         },
         handleBack: function() {

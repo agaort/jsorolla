@@ -1,0 +1,34 @@
+<dom-module id="boostrap-panel">
+    <style is="custom-style" include="jso-styles">
+    </style>
+    <template>
+        <button name="modalbutton" type="button" class="btn btn-primary" data-toggle="modal" data-target="#myModal" on-click="handleBoostrapPanelClick">
+            <content select=".button_panel"></content>
+        </button>
+        <div class="modal fade " id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title" id="myModalLabel"><content select=".header_panel"></content></h4>
+                    </div>
+                    <div class="modal-body">
+                        <p><content select=".body_panel"></content></p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </template>
+</dom-module>
+<script>
+    Polymer({
+        is: "boostrap-panel",
+        handleBoostrapPanelClick: function(e) {
+            this.fire('boostrapanelclick', e.currentTarget.name);
+        }
+    })
+</script>

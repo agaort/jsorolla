@@ -1,6 +1,7 @@
 <link rel="import" href="susi-opencga-project-tree.html">
 <link rel="import" href="susi-opencga-file-preview.html">
 <link rel="import" href="../../../components/new-jso-panel.html">
+<link rel="import" href="../../../components/boostrap-panel.html">
 <link rel="import" href="susi-opencga-folder-list.html">
 <dom-module id="opencga-file-upload">
     <style is="custom-style" include="jso-styles">
@@ -49,12 +50,13 @@
                         </div>
                         <content id="customButtons" select=".custom-button"></content>
                     </div>
-                    <new-jso-panel modal closable hidden id="filePreviewPanel">
-                        <span class="header">
-                            <i class="fa fa-eye"></i> File Preview
-                        </span>
-                        <susi-opencga-file-preview opencga-client={{opencgaClient}} class="container" id="filePreview"></susi-opencga-file-preview>
-                    </new-jso-panel>
+
+                    <!--<new-jso-panel modal closable hidden id="filePreviewPanel">-->
+                        <!--<span class="header">-->
+                            <!--<i class="fa fa-eye"></i> File Preview-->
+                        <!--</span>-->
+                        <!--<susi-opencga-file-preview opencga-client={{opencgaClient}} class="container" id="filePreview"></susi-opencga-file-preview>-->
+                    <!--</new-jso-panel>-->
 
                     <div style="padding: 10px;height: 530px" class="row">
 

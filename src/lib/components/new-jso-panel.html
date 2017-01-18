@@ -149,6 +149,7 @@
             position: relative;
             height: calc(100% - 32px);
             padding:0!important;
+            width: 100%;
         }
 
         :host[_hasfooter] .container {
@@ -157,6 +158,7 @@
         .headeractions{
             float:right;
         }
+
     </style>
     <template>
 
@@ -383,8 +385,8 @@
                         this.style.position = 'fixed';
                         this.style.width = '100%';
                         this.style.height = '100%';
-                        this.style.top = '';
-                        this.style.left = '';
+                        this.style.top = '0';
+                        this.style.left = '0';
                         this.style['z-index'] = currentZIndex + 100;
                     } else {
                         this.style.width = '';
@@ -399,9 +401,10 @@
                         }
                         this._center();
                     }
+                    this.notifyResize();
                 }
                 this.fire('expand');
-                this.notifyResize();
+
             },
 
             handleActionsMouseDown: function(e) {
