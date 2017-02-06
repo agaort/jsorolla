@@ -1,8 +1,7 @@
-<link rel="import" href="susi-opencga-create-folder.html">
-<link rel="import" href="susi-opencga-folder-list-item.html">
-<link rel="import" href="susi-opencga-file-preview.html">
+<link rel="import" href="opencga-folder-list-item.html">
+<link rel="import" href="opencga-file-preview.html">
 <link rel="import" href="../../../../../../iron-flex-layout/iron-flex-layout-classes.html">
-<dom-module id="susi-opencga-folder-list">
+<dom-module id="opencga-folder-list">
     <style is="custom-style" include="jso-styles iron-flex">
 
         #header{
@@ -35,16 +34,16 @@
             height: calc(100% - 90px);
         }
 
-        susi-opencga-folder-list-item[view-mode='list'] {
+        opencga-folder-list-item[view-mode='list'] {
             padding: 3px 7px;
             border-bottom: 1px solid rgba(125, 125, 125, 0.3);
         }
 
-        susi-opencga-folder-list-item[view-mode='list']:last-of-type {
+        opencga-folder-list-item[view-mode='list']:last-of-type {
             border-bottom-width: 0px;
         }
 
-        susi-opencga-folder-list-item[view-mode='icon'] {
+        opencga-folder-list-item[view-mode='icon'] {
             margin: 1px;
             height: 70px;
         }
@@ -109,7 +108,7 @@
                     <span class="header_panel">
                         <i class="fa fa-eye"></i> File Preview
                     </span>
-                    <susi-opencga-file-preview opencga-client={{opencgaClient}} class="body_panel" id="filePreview"></susi-opencga-file-preview>
+                    <opencga-file-preview opencga-client={{opencgaClient}} class="body_panel" id="filePreview"></opencga-file-preview>
                 </boostrap-panel>
                 <!--<button class="btn btn-primary" hidden$="{{checkSelectedFile(selected)}}" on-click="handlePreviewFile">-->
                     <!--<i class="fa fa-eye"></i>-->
@@ -117,7 +116,7 @@
                 <button class="btn btn-primary" on-click="handleViewInfo" style="margin-right: 5px;" hidden$="{{checkSelected(selected)}}">
                     <i class="fa fa-info"></i>
                 </button>
-               
+
             </span>
             <span class="horizontal layout izq">
                 <button class="btn btn-primary" on-click="handleViewMode" hidden$="{{disableIconView}}">
@@ -143,8 +142,8 @@
         <div id="content" class$="{{computeContentClass(viewMode,showInfo)}}">
             <div class$="{{computeClassViewMode(viewMode)}}">
                 <template is="dom-repeat" items="{{files}}" filter="checkFilters" observe="type">
-                    <susi-opencga-folder-list-item file="{{item}}" on-dblclick="handleFileDblClick" on-click="handleFileClick" view-mode="{{viewMode}}">
-                    </susi-opencga-folder-list-item>
+                    <opencga-folder-list-item file="{{item}}" on-dblclick="handleFileDblClick" on-click="handleFileClick" view-mode="{{viewMode}}">
+                    </opencga-folder-list-item>
                 </template>
             </div>
         </div>
@@ -168,18 +167,11 @@
                 <span>{{fileDate}}</span>
             </div>
         </div>
-
-        <!--<jso-panel modal closable hidden id="createFolderModal">-->
-            <!--<div class="header"><i class="fa fa-folder"></i> &nbsp; Create folder</div>-->
-            <!--<susi-opencga-create-folder class="container" id="createfolder" on-folder-created="handleFolderCreated" folder="{{folder}}" study="{{study}}">-->
-            <!--</susi-opencga-create-folder>-->
-        <!--</jso-panel>-->
-
     </template>
 </dom-module>
 <script>
     Polymer({
-        is: "susi-opencga-folder-list",
+        is: "opencga-folder-list",
         properties: {
             opencgaClient: {
                 type: Object
@@ -260,7 +252,7 @@
         handleFileClick: function(e) {
 
             this.selected = e.currentTarget.file;
-            var sel = this.querySelector("susi-opencga-folder-list-item[selected]");
+            var sel = this.querySelector("opencga-folder-list-item[selected]");
             if (sel) {
                 sel.removeAttribute('selected');
             }
@@ -377,7 +369,7 @@
                     }
                     });
                     p1.catch(function(response){
-                        console.log('susi-opencga-folder-list374:Server error, try again later.');
+                        console.log('opencga-folder-list374:Server error, try again later.');
                     });
                 }
             }
@@ -403,7 +395,7 @@
                             }
                         },
                         error: function() {
-                            console.log('jso-opencga-folder-list401:Server error, try again later.');
+                            console.log('opencga-folder-list401:Server error, try again later.');
                         }
                     }
                 });

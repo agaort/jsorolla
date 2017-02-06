@@ -1,4 +1,4 @@
-<dom-module id="susi-opencga-file-preview">
+<dom-module id="opencga-file-preview">
     <style is="custom-style" include="jso-styles">
         :host {
             display: block;
@@ -22,7 +22,7 @@
 </dom-module>
 <script>
     Polymer({
-        is: "susi-opencga-file-preview",
+        is: "opencga-file-preview",
         properties: {
             opencgaClient: {
                 type: Object
@@ -88,30 +88,6 @@
                     }
                 })
             }
-//            OpencgaManager.files.content({
-//                id: this.file.id,
-//                query: {
-//                    sid: Cookies('bioinfo_sid'),
-//                    limit: this._limit,
-//                    start: this._start
-//                },
-//                request: {
-//                    async: false,
-//                    success: function(response) {
-//                        data = response;
-//                    },
-//                    error: function() {
-//
-//                    }
-//                }
-//            });
-
-//            if (data) {
-//                this.contentData =
-//                    this.contentData = this.contentData + data;
-//            } else {
-//                this._end = true;
-//            }
         },
         handleScroll: function(e) {
             var el = e.currentTarget;

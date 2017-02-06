@@ -1,4 +1,5 @@
-<dom-module id="susi-opencga-study-tree">
+<link rel="import" href="opencga-study-tree.html">
+<dom-module id="opencga-project-tree">
     <style is="custom-style" include="jso-styles">
         :host {
             position: relative;
@@ -6,19 +7,13 @@
             box-sizing: border-box;
         }
 
-        :host:hover {
-            background-color: #ddd;
-        }
-
-        :host[selected] > .main {
-            background-color: #ccc;
+        :host[selected] > .main > .name {
+            /*font-weight: bold;*/
         }
 
         .main {
             border: 1px solid lightgrey;
-            padding-left: 12px;
-            padding-top:8px;
-            padding-bottom: 8px;;
+            padding: 10px 2px 10px 0;
         }
 
         .name:before {
@@ -26,13 +21,13 @@
             display: inline-block;
             width: 20px;
             text-align: center;
-            content: '\f02d';
+            content: '\f0b1';
         }
 
         .arrow:before {
             font-family: "FontAwesome";
             display: inline-block;
-            width: 15px;
+            width: 12px;
             text-align: center;
             content: '\f0da';
         }
@@ -53,40 +48,61 @@
             padding: 2px 2px 2px 0;
             color: #428bca;
         }
+
     </style>
     <template>
         <div class="main horizontal layout">
-            <span class="arrow" empty$="{{isEmpty(study)}}" open$="{{open}}" on-click="handleArrowClick"></span>
-            <span class="name flex" on-click="handleClick">{{study.name}}</span>
+            <span class="arrow" empty$="{{isEmpty(project)}}" open$="{{open}}" on-click="handleArrowClick"></span>
+            <span class="name flex" on-click="handleClick" on-dblclick="handleDblclick">{{project.name}}</span>
         </div>
         <div hidden$="{{!open}}">
-
+            <template is="dom-repeat" items="{{project.studies}}">
+                <opencga-study-tree
+                        on-click="handleStudyClick"
+                        study="{{item}}">
+                </opencga-study-tree>
+            </template>
         </div>
     </template>
 </dom-module>
 <script>
     Polymer({
-        is: "susi-opencga-study-tree",
+        is: "opencga-project-tree",
         properties: {
-            study: {
+            project: {
                 type: Object
             },
             selected: {
                 type: Boolean,
                 reflectToAttribute: true
             },
+            selectedStudy: {
+                type: Object
+            },
             open: {
                 type: Boolean,
-                value: false
+                value: true
             }
         },
-        isEmpty: function (study) {
-            return study.files.length <= 0;
+        isEmpty: function (project) {
+            return project.studies.length <= 0;
         },
         handleClick: function (e) {
+            this.fire('clickproject');
+//            this.selectedStudy = null;
+        },
+        handleDblclick: function (e) {
+            this.toggleOpen();
         },
         handleArrowClick: function (e) {
-            if (this.study.files.length > 0) {
+            this.toggleOpen();
+        },
+        handleStudyClick: function (e) {
+            this.selectedStudy = e.currentTarget;
+            this.fire('clickstudy');
+        },
+        toggleOpen: function () {
+            if (this.project.studies.length != 0) {
                 this.open = !this.open;
             }
         }

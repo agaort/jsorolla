@@ -1,9 +1,9 @@
-<link rel="import" href="susi-opencga-project-tree.html">
-<link rel="import" href="susi-opencga-file-preview.html">
+<link rel="import" href="opencga-project-tree.html">
+<link rel="import" href="opencga-file-preview.html">
 <link rel="import" href="../../../components/new-jso-panel.html">
 <link rel="import" href="../../../components/boostrap-panel.html">
-<link rel="import" href="susi-opencga-folder-list.html">
-<dom-module id="opencga-file-upload">
+<link rel="import" href="opencga-folder-list.html">
+<dom-module id="opencga-file-browser">
     <style is="custom-style" include="jso-styles">
         #mainmenucontent {
             height: calc(100% - 30px);
@@ -29,8 +29,8 @@
                         <div class="col-sm-12">
                             <div id="mainmenucontent">
                                 <template is="dom-repeat" items="{{projects}}">
-                                    <susi-opencga-project-tree on-clickstudy="handleStudyClick" project="{{item}}">
-                                    </susi-opencga-project-tree>
+                                    <opencga-project-tree on-clickstudy="handleStudyClick" project="{{item}}">
+                                    </opencga-project-tree>
                                 </template>
                             </div>
                         </div>
@@ -39,8 +39,8 @@
 
                 <div class="col-sm-9">
                     <div class="well row maincontent">
-                        <susi-opencga-folder-list id="opencgaFolderList" opencga-client={{opencgaClient}} on-fileselect="handleFileSelect" on-openfolder="handleOpenFolder" on-upload-file="handleUploadFile" on-back="handleBackFolder" on-need-refresh="refreshFolderFiles" on-previewfile="handlePreviewFile" study="{{study}}" folder="{{folder}}" files="{{files}}" mode="{{mode}}" disable-icon-view="{{disableIconView}}">
-                        </susi-opencga-folder-list>
+                        <opencga-folder-list id="opencgaFolderList" opencga-client={{opencgaClient}} on-fileselect="handleFileSelect" on-openfolder="handleOpenFolder" on-upload-file="handleUploadFile" on-back="handleBackFolder" on-need-refresh="refreshFolderFiles" on-previewfile="handlePreviewFile" study="{{study}}" folder="{{folder}}" files="{{files}}" mode="{{mode}}" disable-icon-view="{{disableIconView}}">
+                        </opencga-folder-list>
 
                     </div>
                     <div id="botbar" class="horizontal layout center">
@@ -160,7 +160,7 @@
 </dom-module>
 <script>
     Polymer({
-        is: "opencga-file-upload",
+        is: "opencga-file-browser",
             properties: {
                 opencgaClient: {
                     type: Object
@@ -326,11 +326,11 @@
         },
         _setInitialSelection: function() {
                 if (this.selectedProject == null) {
-                    var el = Polymer.dom(this.root).querySelector('susi-opencga-project-tree');
+                    var el = Polymer.dom(this.root).querySelector('opencga-project-tree');
                     this.set('selectedProject', el);
                 }
                 if (this.selectedProject != null && this.selectedStudy == null) {
-                    var el = Polymer.dom(this.selectedProject.root).querySelector('susi-opencga-study-tree');
+                    var el = Polymer.dom(this.selectedProject.root).querySelector('opencga-study-tree');
                     this.set('selectedStudy', el);
                 }
                 if (this.folder && this.selectedStudy) {
