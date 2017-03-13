@@ -65,8 +65,8 @@
                     <!-- <div class="name title" title$="{{sample.name}}" contenteditable="true" on-blur="handleSampleRename">{{sample.name}}</div> -->
                 </div>
                 <div id="status" class="title">
-                    <i class$="{{computeStatusIcon(sample.status)}}"></i>
-                    <span style="">{{sample.status}}</span>
+                    <i class$="{{computeStatusIcon(sample.status.name)}}"></i>
+                    <span style="">{{sample.status.name}}</span>
                 </div>
                 <div id="source" class="title" title$="{{sample.source}}">
                     <span>{{sample.source}}</span>

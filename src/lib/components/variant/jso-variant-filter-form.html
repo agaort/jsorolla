@@ -1210,7 +1210,7 @@
 
             for (var i = 0; i < this.samples.length; i++) {
                 var sample = this.samples[i];
-                if (sample.status == 'READY') {
+                if (sample.status.name == 'READY') {
                     if (sampleFiles[sample.source] == null) {
                         sampleFiles[sample.source] = 1;
                         n++;
@@ -1231,13 +1231,14 @@
                                 var result = response.response[0].result;
                                 for (var i = 0; i < result.length; i++) {
                                     if (result[i].type == "FILE") {
-                                        if (sampleFiles[result[i].name] != null && result[i].index != null && result[i].index.status == 'READY') {
+                                        if (sampleFiles[result[i].name] != null && result[i].index != null && result[i].index.status.name == 'READY') {
                                             filesIdAux.push(result[i].id);
                                         }
                                     }
                                 }
                                 me.set('filesId', filesIdAux);
                             } else {
+                                console.log("error in studies.files in jso-variant-filter-form");
                                 console.log(response.response[0].errorMsg);
                             }
                         },

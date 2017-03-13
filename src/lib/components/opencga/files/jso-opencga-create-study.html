@@ -120,10 +120,10 @@
                 });
 
                 var query = {
-                    name: this.$.input.value,
-                    alias: this.$.input.value.replace(/ /gi, ''),
-                    description: '',
-                    type: this.querySelector('input[name="type"]:checked').value,
+                    "name": this.$.input.value,
+                    "alias": this.$.input.value.replace(/ /gi, ''),
+                    "description": '',
+                    "type": this.querySelector('input[name="type"]:checked').value,
                 }
 
                 var xhr = new XMLHttpRequest();
@@ -140,7 +140,7 @@
                         console.log('jso-opencga-create-study140:Server error, try again later.');
                     }
                 };
-                xhr.send(JSON.stringify([query]));
+                xhr.send(JSON.stringify(query));
             }
         }
     });

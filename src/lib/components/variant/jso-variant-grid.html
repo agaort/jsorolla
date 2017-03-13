@@ -98,19 +98,13 @@
             defaultValue: '.',
             formula: function(row) {
                 var links = [];
-                if (row.ids.length > 0) {
-                    for (var i = 0; i < row.ids.length; i++) {
-                        if (row.ids[i] == '.') {
-                            return '.';
-                        }
-                        var url = "http://www.ensembl.org/Homo_sapiens/Variation/Explore?r=" + row.chromosome + ":" + row.start + "-" + row.end + ";v=" + row.ids[i] + ";vdb=variation";
-                        links.push('<a href="' + url + '" target="_blank">' + row.ids[i] + '</a>');
-                    }
-
-                    return links.join(",");
-                } else {
+                if (row.id == '.') {
                     return '.';
                 }
+                var url = "http://www.ensembl.org/Homo_sapiens/Variation/Explore?r=" + row.chromosome + ":" + row.start + "-" + row.end + ";v=" + row.id + ";vdb=variation";
+                links.push('<a href="' + url + '" target="_blank">' + row.id + '</a>');
+                return links.join(",");
+
             },
             sort: function(a, b) {
                 var rsnum_a = parseInt(a.id.replace('rs', ''));

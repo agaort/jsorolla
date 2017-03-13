@@ -394,12 +394,37 @@
         _indexFile: function() {
             var me = this;
             if (this.selected) {
-                OpencgaManager.files.index({
-                    id: this.selected.id,
+//                OpencgaManager.files.index({
+//                    id: this.selected.id,
+//                    query: {
+//                        sid: Cookies('bioinfo_sid'),
+//                        storageEngine: "mongodb",
+//
+//                    },
+//                    request: {
+//                        success: function(response) {
+//                            if (response.response[0].errorMsg === '' || response.response[0].errorMsg == null) {
+//                                console.log("index");
+//                                console.log(response);
+//                                debugger
+//                                me.fire('need-refresh');
+//                            } else {
+//                                console.log(response.response[0].errorMsg);
+//                            }
+//                        },
+//                        error: function() {
+//                            console.log('jso-opencga-folder-list401:Server error, try again later.');
+//                        }
+//                    }
+//                });
+
+                OpencgaManager.analysis.variant.index({
                     query: {
                         sid: Cookies('bioinfo_sid'),
-                        storageEngine: "mongodb",
-
+//                        storageEngine: "mongodb",
+                        file: this.selected.id,
+                        study: this.study.id,
+                        annotate: true
                     },
                     request: {
                         success: function(response) {

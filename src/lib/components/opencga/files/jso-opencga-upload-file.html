@@ -399,19 +399,26 @@
                 if (this.$.form.checkValidity()) {
                     this.uploading = true;
                     this.message = '';
-                    var config = {
-                        inputFile: this.$.fileInput.files[0],
-                        fileName: this.fileName.replace(/[^a-zA-Z0-9._\-]/g, "_"),
-                        userId: Cookies("bioinfo_user"),
-                        sid: Cookies("bioinfo_sid"),
-                        studyId: selStudy.id,
-                        relativeFilePath: folder + this.fileName,
-                        fileFormat: 'PLAIN',
-                        bioFormat: selBioformat.value,
-                        description: '',
-                        callbackProgress: function(chunk, total, response) {
-                            me.percentProgress = Math.round((chunk.id / total) * 100);
-                            if (chunk.last) {
+
+                    var formData = new FormData();
+                    formData.append('file', this.$.fileInput.files[0]);
+                    formData.append('filename', this.fileName.replace(/[^a-zA-Z0-9._\-]/g, "_"));
+                    formData.append('fileFormat', 'UNKNOWN');
+                    formData.append('bioformat', 'NONE');
+                    formData.append('study', selStudy.id);
+                    formData.append('relativeFilePath', folder);
+                    formData.append('parents', true);
+
+                    OpencgaManager.files.upload({
+                        query:{
+                            sid: Cookies('bioinfo_sid')
+                        },
+                        request: {
+                            method:"POST",
+                            body: formData,
+                            success: function(response) {
+                                console.log(response);
+
                                 me.message = "Upload complete.";
                                 me.percentProgress = 0;
                                 me.uploading = false;
@@ -419,24 +426,90 @@
                                 me.fileName = 'None';
                                 me.$.validator.reset();
                                 me.fire('need-refresh');
+                                OpencgaManager.analysis.variant.index({
+                                    query: {
+                                        sid: Cookies('bioinfo_sid'),
+            //                        storageEngine: "mongodb",
+                                        file: response.response[0].result[0].id,
+                                        annotate: true
+                                    },
+                                    request: {
+                                        success: function(response) {
+                                            if (response.response[0].errorMsg === '' || response.response[0].errorMsg == null) {
+                                                console.log("index");
+                                                console.log(response);
+                                                me.fire('need-refresh');
+                                            } else {
+                                                console.log(response.response[0].errorMsg);
+                                            }
+                                        },
+                                        error: function() {
+                                            console.log('jso-opencga-folder-list401:Server error, try again later.');
+                                        }
+                                    }
+                                });
 
                                 var uploadedFile = response.response[0].result[0];
                                 me.async(function() {
                                     me.fire('file-uploaded', uploadedFile);
                                 }, 50);
-                                //                                me._indexFile(uploadedFile);
+                            },
+                            loadStart: function(uploadEvent) {
+                                console.log(uploadEvent);
+                            },
+                            progress: function(ue) {
+                                console.log(ue);
+                                me.percentProgress = Math.round((ue.loaded *100) / ue.total);
+                                console.log(me.percentProgress);
+                            },
+                            load: function(uploadEvent) {
+                                console.log(uploadEvent);
                             }
-                        },
-                        error: function(msg) {
-                            me.percentProgress = 0;
-                            me.$.fileInput.value = null;
-                            me.fileName = 'None';
-                            me.$.validator.reset();
-                            me.uploading = false;
-                            me.message = msg;
                         }
-                    };
-                    OpencgaManager.files.upload2(config);
+                    });
+
+
+//                    var config = {
+//                        file: this.$.fileInput.files[0],
+//                        fileName: this.fileName.replace(/[^a-zA-Z0-9._\-]/g, "_"),
+//                        userId: Cookies("bioinfo_user"),
+//                        sid: Cookies("bioinfo_sid"),
+//                        studyId: selStudy.id,
+//                        relativeFilePath: folder + this.fileName,
+////                        format: 'UNKNOWN',
+////                        bioFormat: "VCF",
+//                        fileFormat: "UNKNOWN",
+//                        bioformat: "NONE",
+//                        description: '',
+//                        parents:true,
+//                        callbackProgress: function(chunk, total, response) {
+//                            me.percentProgress = Math.round((chunk.id / total) * 100);
+//                            if (chunk.last) {
+//                                me.message = "Upload complete.";
+//                                me.percentProgress = 0;
+//                                me.uploading = false;
+//                                me.$.fileInput.value = null;
+//                                me.fileName = 'None';
+//                                me.$.validator.reset();
+//                                me.fire('need-refresh');
+//
+//                                var uploadedFile = response.response[0].result[0];
+//                                me.async(function() {
+//                                    me.fire('file-uploaded', uploadedFile);
+//                                }, 50);
+//                                //                                me._indexFile(uploadedFile);
+//                            }
+//                        },
+//                        error: function(msg) {
+//                            me.percentProgress = 0;
+//                            me.$.fileInput.value = null;
+//                            me.fileName = 'None';
+//                            me.$.validator.reset();
+//                            me.uploading = false;
+//                            me.message = msg;
+//                        }
+//                    };
+//                    OpencgaManager.files.upload2(config);
                 } else {
                     alert("Please select a file");
                     return;

@@ -284,6 +284,32 @@ var OpencgaManager = {
                     }
                 }
             });
+        },
+        upload3: function (args){
+            //upload(params, options) {
+            //    if (params === undefined) {
+            //        return;
+            //    }
+            //
+            //    if (!params.hasOwnProperty("body")) {
+            //        let aux = {
+            //            body: params
+            //        };
+            //        params = aux;
+            //    }
+            //
+            //    if (params.body.hasOwnProperty("sid")) {
+            //        params["sid"] = params.body.sid;
+            //        delete params.body.sid;
+            //    }
+            //
+            //    if (options === undefined) {
+            //        options = {};
+            //    }
+            //    options["method"] = "POST";
+            //
+            //    return this.get("files", undefined, "upload", params, options);
+            //}
         }
 
     },
@@ -338,14 +364,18 @@ var OpencgaManager = {
         delete: function (args) {
             return OpencgaManager._doRequest(args, 'tools', 'delete');
         }
+    }, analysis: {
+//        jobs: function (args) {
+//            return OpencgaManager._doRequest(args, 'analysis', 'jobs');
+//        },
+//        create: function (args) {
+//            return OpencgaManager._doRequest(args, 'analysis', 'create');
+        variant:{
+            index: function (args) {
+                return OpencgaManager._doRequest(args, 'analysis/variant', 'index');
+            }
+        }
     },
-    //analysis: {
-    //    jobs: function (args) {
-    //        return OpencgaManager._doRequest(args, 'analysis', 'jobs');
-    //    },
-    //    create: function (args) {
-    //        return OpencgaManager._doRequest(args, 'analysis', 'create');
-    //},
     _url: function (args, api, action) {
         var host = OpencgaManager.host;
         if (typeof args.request.host !== 'undefined' && args.request.host != null) {
@@ -392,6 +422,11 @@ var OpencgaManager = {
                 console.log(url);
             }
             var request = new XMLHttpRequest();
+            if(method == "POST" && args.request.body != null){
+                request.upload.addEventListener("loadstart", args.request.loadStart, false);
+                request.upload.addEventListener("progress", args.request.progress, false);
+                request.upload.addEventListener("load", args.request.load, false);
+            }
             request.onload = function () {
                 var contentType = this.getResponseHeader('Content-Type');
                 if (contentType === 'application/json') {
@@ -418,19 +453,30 @@ var OpencgaManager = {
                 }, this);
             };
             request.open(method, url, async);
-            request.send();
+            var body = null;
+            if (args.request.body != null) {
+                console.log("Dentro del body");
+                body = args.request.body;
+
+            }
+
+            if (args.request.responseType != null) {
+                console.log("Dentro del responseType");
+                request.responseType = args.request.responseType;
+            }
+            request.send(body);
             return url;
         }
     },
     _uploadFile: function (args) {
         var url = args.url;
-        var inputFile = args.inputFile;
+        var inputFile = args.file;
         var fileName = args.fileName;
         var userId = args.userId;
         var studyId = args.studyId;
         var relativeFilePath = args.relativeFilePath;
         var fileFormat = args.fileFormat;
-        var bioFormat = args.bioFormat;
+        var bioformat = args.bioformat;
         var description = args.description;
         var callbackProgress = args.callbackProgress;
 
@@ -479,8 +525,8 @@ var OpencgaManager = {
                     formData.append("last_chunk", true);
                     formData.append("total_size", SIZE);
                     formData.append("fileFormat", fileFormat);
-                    formData.append("bioFormat", bioFormat);
-                    console.log(bioFormat);
+                    formData.append("bioformat", bioformat);
+                    console.log(bioformat);
                     formData.append("description", description);
                 }
                 uploadChunk(formData, c, function (chunkResponse) {
@@ -488,7 +534,7 @@ var OpencgaManager = {
                     /* Bioformat is modified on server due to BioformatDetector bug */
                     /* https://github.com/opencb/opencga/blob/develop/opencga-analysis/src/main/java/org/opencb/opencga/analysis/files/FileMetadataReader.java#L123 */
                     /* Remove this ASAP, Server bioformatDetector should be invoked if no bioformat is provided. */
-                    OpencgaManager.__fix_fileBioformat(chunkResponse, bioFormat, function (f) {
+                    OpencgaManager.__fix_fileBioformat(chunkResponse, bioformat, function (f) {
                         callbackProgress(c, NUM_CHUNKS, f);
                     });
                     /* FIX-END----- Remove this "FIX block" after the server fix */

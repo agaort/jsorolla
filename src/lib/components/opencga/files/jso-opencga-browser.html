@@ -334,16 +334,13 @@
                 el.setAttribute('hidden', '');
             }
 
-
-
-
         },
         checkFileModeOk: function(mode, selectedFile) {
             if (this.enableSelectOk == true) {
                 if (mode === 'file' && selectedFile != null && selectedFile.id != null && selectedFile.type == 'FILE') {
                     return true;
                 }
-                if (mode === 'folder' && selectedFile != null && selectedFile.id != null && selectedFile.type == 'FOLDER') {
+                if (mode === 'folder' && selectedFile != null && selectedFile.id != null && selectedFile.type == 'DIRECTORY') {
                     return true;
                 }
             }
@@ -406,6 +403,7 @@
             this.folder = e.detail;
             this.push('folders', this.folder);
             this.files = [];
+            debugger
             this.refreshFolderFiles();
         },
         refreshFolderFiles: function() {
@@ -416,8 +414,10 @@
                 me.files = files;
                 me.loading = false;
                 if (me.enableAutoIndex) {
-                    if (f.name !== me.files[0].name && me.files[0].index == null && me.files[0].type == "FILE") {
-                        me.$.opencgaFolderList._autoIndexfile(me.files[0]);
+                    if(f != null){
+                        if (f.name !== me.files[0].name && me.files[0].index == null && me.files[0].type == "FILE") {
+                            me.$.opencgaFolderList._autoIndexfile(me.files[0]);
+                        }
                     }
                 }
                 //                console.log(files);
@@ -547,7 +547,7 @@
                 sid: Cookies('bioinfo_sid'),
                 //                    status:'READY,STAGED,MISSING',
                 status: 'READY',
-                type: 'FILE,FOLDER',
+                type: 'FILE,DIRECTORY',
                 studyId: studyId
             };
 
@@ -613,7 +613,7 @@
                 }
 
                 if (this.mode == 'folder') {
-                    if (file.type != 'FOLDER') {
+                    if (file.type != 'DIRECTORY' || file.type != 'FOLDER') {
                         continue;
                     }
                 } else if (this.mode == 'file' && bfList.length > 0) {
